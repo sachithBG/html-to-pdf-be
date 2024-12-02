@@ -1,0 +1,27 @@
+{
+  "name": "html-to-pdf",
+  "version": "1.0.0",
+  "description": "for convert html to pdf",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "test": "jest",
+    "test:coverage": "jest --coverage"
+  },
+  "author": "sachith",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.7.8",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.1",
+    "https": "^1.0.0",
+    "morgan": "^1.10.0",
+    "passport": "^0.7.0",
+    "puppeteer": "^23.9.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.7"
+  }
+}
