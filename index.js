@@ -37,7 +37,8 @@ app.use(express.urlencoded({ extended: false }));
 // );
 
 // app.use("/api/auth", require("./app/routes/auth.route"));
-app.use("/api/htmlToPdf", require("./app/routes/htmlToPdf.route"));
+app.use("/api/html-to-pdf", require("./app/routes/htmlToPdf.route"));
+app.use("/api/dynamic-html-table", require("./app/routes/dynamicHtmlTable.route"));
 app.listen(PORT, () => console.log(`The server is running on port ${PORT}`));
 
 const triggerApi = () => {
