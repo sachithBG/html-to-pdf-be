@@ -1,14 +1,21 @@
-
-const express = require("express");
+const express = require('express');
 const router = express.Router();
-const { getTblDataById, saveTblData, updateTblData, deleteTblData } = require("../controllers/dynamicHtmlTable.controller");
+const authenticateToken = require('../middleware/auth');
+const {
+    createHtmlTable,
+    updateHtmlTable,
+    getHtmlTables,
+    getHtmlTableById,
+    deleteHtmlTable
+} = require('../controllers/dynamicHtmlTable.controller');
 
-router.post("/", saveTblData);
-router.put("/", updateTblData);
+// Validation rules (optional, depending on your needs)
+// For example, validating table data like name, rows, etc. using express-validator can be added.
 
-router.get("/:id", getTblDataById);
-router.delete("/", deleteTblData);
-
-
+router.post("/", authenticateToken, createHtmlTable); // Create new HTML table
+router.put("/:id", authenticateToken, updateHtmlTable); // Update HTML table
+router.get("/", authenticateToken, getHtmlTables); // Get all HTML tables
+router.get("/:id", authenticateToken, getHtmlTableById); // Get HTML table by ID
+router.delete("/:id", authenticateToken, deleteHtmlTable); // Delete HTML table
 
 module.exports = router;

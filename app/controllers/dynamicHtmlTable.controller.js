@@ -1,71 +1,70 @@
+const htmlTableService = require('../services/dynamicHtmlTable.service');
 
-const { saveTableTada, getTableDataById } = require("../services/dynamicHtmlTable.service");
-
-const saveTblData = async (req, res) => {
+const createHtmlTable = async (req, res) => {
     try {
-        res.json({
-            message: "Table saved successfully!",
-            data: await saveTableTada(req.body),
-        });
+        const tableData = req.body;
+        const newTable = await htmlTableService.createHtmlTable(tableData);
+        res.status(201).json(newTable);
     } catch (error) {
-        console.error("Error saving table data:", error);
-        res.status(500).json({
-            message: "An error occurred while saving the table.",
-        });
+        res.status(500).json({ error: error.message });
     }
-}
+};
 
-const updateTblData = async (req, res) => {
+const updateHtmlTable = async (req, res) => {
     try {
-        if (!req?.query?.id || !req.body) {
-            return res.status(400).json({
-                message: "No table data provided.",
-            });
+        const id = req.params.id;
+        const tableData = req.body;
+        const updatedTable = await htmlTableService.updateHtmlTable(id, tableData);
+        res.status(200).json(updatedTable);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+const getHtmlTables = async (req, res) => {
+    try {
+        // Fetch the organization_id from the query parameter
+        const organization_id = req.query.organization_id;
+
+        // Check if organization_id is provided, otherwise return an error
+        if (!organization_id) {
+            return res.status(400).json({ message: "organization_id is required" });
         }
-        res.json({
-            message: "Table saved successfully!",
-            data: await updateTblData(req?.query?.id, req.body),
-        });
+        const tables = await htmlTableService.getHtmlTables(organization_id);
+        res.status(200).json(tables);
     } catch (error) {
-        console.error("Error saving table data:", error);
-        res.status(500).json({
-            message: "An error occurred while saving the table.",
-        });
+        res.status(500).json({ error: error.message });
     }
-}
+};
 
-const getTblDataById = async (req, res) => {
-    let { id, bodyContent, footerContent } = req.body;
-
-    // Generate HTML table preview using the data from the frontend
-    const tableHtml = await getTableDataById(id);
-
-    // You could save the data to the database or perform other operations here
-
-    // For this example, we just return the generated HTML table preview
-    res.json({
-        htmlPreview: tableHtml,
-    });
-}
-
-const deleteTblData = async (req, res) => {
-    if (!req?.query?.id) {
-        return res.status(400).json({
-            message: "No table data provided.",
-        });
+const getHtmlTableById = async (req, res) => {
+    try {
+        const id = req.params.id;
+        const table = await htmlTableService.getHtmlTableById(id);
+        if (table) {
+            res.status(200).json(table);
+        } else {
+            res.status(404).json({ message: "Table not found" });
+        }
+    } catch (error) {
+        res.status(500).json({ error: error.message });
     }
-    await deleteTblData(req.query.id)
+};
 
-    res.json({
-        message: "Table deleted successfully!"
-    });
-}
-
-
+const deleteHtmlTable = async (req, res) => {
+    try {
+        const id = req.params.id;
+        await htmlTableService.deleteHtmlTable(id);
+        res.status(200).json({ message: "Table deleted successfully" });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
 
 module.exports = {
-    getTblDataById,
-    saveTblData,
-    updateTblData,
-    deleteTblData
-}
+    createHtmlTable,
+    updateHtmlTable,
+    getHtmlTables,
+    getHtmlTableById,
+    deleteHtmlTable,
+};
