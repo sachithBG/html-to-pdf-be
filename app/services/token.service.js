@@ -2,8 +2,8 @@ const { generateRefreshToken, verifyToken } = require('../utils/jwt');
 const tokenRepository = require('../repositories/token.repository');
 
 // Generate new access and refresh tokens for the organization
-const generateTokens = async (userId, username, organizationId) => {
-    const { accessToken, refreshToken } = generateRefreshToken(userId, username, organizationId);
+const generateTokens = async (userId, name, organizationId) => {
+    const { accessToken, refreshToken } = generateRefreshToken(userId, name, organizationId);
     // Store the refresh token in the database
     await tokenRepository.saveRefreshToken(organizationId, refreshToken);
 

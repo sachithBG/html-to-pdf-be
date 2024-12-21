@@ -8,13 +8,21 @@ const register = async (req, res) => {
         return res.status(400).json({ errors: errors.array() });
     }
 
-    const { username, email, password } = req.body;
+    const { name, email, password } = req.body;
 
     try {
-        const userId = await userService.registerUser(username, email, password);
-        res.status(201).json({ id: userId, username, email });
+        const userId = await userService.registerUser(name, email, password);
+        res.status(201).json({ id: userId, name, email });
     } catch (error) {
-        res.status(400).json({ error: error.message });
+        // res.status(400).json({ error: error.message });
+        console.log(error);
+        if (error.code === 'ER_DUP_ENTRY') {
+            res.status(409).json({ error: 'Email is already in use.' });
+        } else if (error.code === 'INVALID_INPUT') {
+            res.status(422).json({ error: 'Invalid input data provided.' });
+        } else {
+            res.status(400).json({ error: error.message }); // Fallback for generic errors
+        }
     }
 };
 
@@ -25,11 +33,11 @@ const login = async (req, res) => {
         return res.status(400).json({ errors: errors.array() });
     }
 
-    const { email, password } = req.body;
+    const { email, password, rememberMe } = req.body;
 
     try {
-        const token = await userService.loginUser(email, password);
-        res.status(200).json({ token });
+        const token = await userService.loginUser(email, password, rememberMe);
+        res.status(200).json(token);
     } catch (error) {
         res.status(401).json({ message: error.message });
     }
@@ -50,10 +58,10 @@ const getUser = async (req, res) => {
 // Update user
 const updateUser = async (req, res) => {
     const { id } = req.params;
-    const { username, email, password } = req.body;
+    const { name, email, password } = req.body;
 
     try {
-        await userService.updateUser(id, username, email, password);
+        await userService.updateUser(id, name, email, password);
         res.status(200).json({ message: 'User updated successfully' });
     } catch (error) {
         res.status(400).json({ error: error.message });

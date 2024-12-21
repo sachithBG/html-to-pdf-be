@@ -5,7 +5,7 @@ const authenticateToken = require("../middleware/auth");
 
 // Validation for creating organization
 const createOrganizationValidation = [
-    body('userId').isInt().withMessage('User ID must be an integer').notEmpty().withMessage('User ID is required'),
+    body('user_id').isInt().withMessage('User ID must be an integer').notEmpty().withMessage('User ID is required'),
     body('name').isString().withMessage('Organization name must be a string').notEmpty().withMessage('Organization name is required')
 ];
 
@@ -28,6 +28,9 @@ router.get('/organization/:id', authenticateToken, organizationController.getOrg
 
 // Route for updating an organization
 router.put('/:id', authenticateToken, updateOrganizationValidation, organizationController.updateOrganization);
+
+// Route for updating an organization to default
+router.put('/:id/default', authenticateToken, organizationController.updateOrganizationToDefault);
 
 // Route for deleting an organization
 router.delete('/:id', authenticateToken, organizationController.deleteOrganization);

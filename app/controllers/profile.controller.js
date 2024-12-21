@@ -1,5 +1,6 @@
 const { validationResult } = require('express-validator');
 const profileService = require('../services/profile.service');
+const userService = require('../services/user.service');
 
 // Create profile
 const createProfile = async (req, res) => {
@@ -43,6 +44,45 @@ const updateProfile = async (req, res) => {
     }
 };
 
+// Update user name
+const updateUserName = async (req, res) => {
+    const { userId } = req.params;
+    const { name } = req.body;
+
+    try {
+        await userService.updateUserName(userId, name);
+        res.status(200).json({ message: 'User name updated successfully' });
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+};
+
+// Update profile theme
+const updateProfileTheme = async (req, res) => {
+    const { userId } = req.params;
+    const { theme } = req.body;
+
+    try {
+        await profileService.updateProfileTheme(userId, theme);
+        res.status(200).json({ message: 'Profile theme updated successfully' });
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+};
+
+// Update profile avatar
+const updateProfileAvatar = async (req, res) => {
+    const { userId } = req.params;
+    const { avatar } = req.body;
+
+    try {
+        await profileService.updateProfileAvatar(userId, avatar);
+        res.status(200).json({ message: 'Profile avatar updated successfully' });
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+};
+
 // Delete profile
 const deleteProfile = async (req, res) => {
     const { userId } = req.params;
@@ -55,4 +95,4 @@ const deleteProfile = async (req, res) => {
     }
 };
 
-module.exports = { createProfile, getProfile, updateProfile, deleteProfile };
+module.exports = { createProfile, getProfile, updateProfile, deleteProfile, updateProfileTheme, updateProfileAvatar, updateUserName };

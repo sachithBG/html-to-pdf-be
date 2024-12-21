@@ -6,4 +6,4 @@ CREATE TABLE addons (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, -- Tracks the last update time
     UNIQUE (organization_id, name),                      -- Ensures unique addon names within the same organization
     FOREIGN KEY (organization_id) REFERENCES organizations(id) ON DELETE CASCADE
-);
+) CHARSET=utf8mb4;

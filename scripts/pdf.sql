@@ -10,6 +10,6 @@ CREATE TABLE pdf_templates (
     displayHeaderFooter BOOLEAN DEFAULT true,   -- Column to control display of header and footer
     defVal VARCHAR(255) DEFAULT '-',             -- Column for the default value
     FOREIGN KEY (organization_id) REFERENCES organizations(id)
-);
+) CHARSET=utf8mb4;
 
 

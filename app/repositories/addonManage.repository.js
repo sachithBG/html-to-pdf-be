@@ -21,8 +21,16 @@ const getAddonById = async (id) => {
 
 const getAllAddons = async (userId) => {
     const [addons] = await db.query(
-        "SELECT addons.* FROM addons JOIN organizations ON addons.organization_id = organizations.id WHERE organizations.user_id = ?",
+        "SELECT addons.* FROM addons JOIN organizations ON addons.organization_id = organizations.id WHERE organizations.is_default=true AND organizations.user_id = ?",
         [userId]
+    );
+    return addons;
+};
+
+const getAllAddonsByOrg = async (orgId) => {
+    const [addons] = await db.query(
+        "SELECT addons.* FROM addons JOIN organizations ON addons.organization_id = organizations.id WHERE organizations.id = ?",
+        [orgId]
     );
     return addons;
 };
@@ -31,4 +39,4 @@ const deleteAddon = async (id) => {
     await db.query("DELETE FROM addons WHERE id = ?", [id]);
 };
 
-module.exports = { createAddon, updateAddon, getAddonById, getAllAddons, deleteAddon };
+module.exports = { createAddon, updateAddon, getAddonById, getAllAddons, deleteAddon, getAllAddonsByOrg };

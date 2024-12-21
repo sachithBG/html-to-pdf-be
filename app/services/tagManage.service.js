@@ -30,8 +30,8 @@ const findTagById = async (id) => {
     return tag;
 };
 
-const findTags = async () => {
-    return await tagRepository.findTags();
+const findTags = async (addon_ids) => {
+    return await tagRepository.findTags(addon_ids);
 };
 
 const deleteTag = async (id) => {

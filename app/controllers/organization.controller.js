@@ -2,10 +2,10 @@ const organizationService = require('../services/organization.service');
 
 // Create organization
 const createOrganization = async (req, res) => {
-    const { userId, name } = req.body;
+    const { user_id, name, is_default, logo } = req.body;
 
     try {
-        const organization = await organizationService.createOrganization(userId, name);
+        const organization = await organizationService.createOrganization(user_id, name, is_default || 0, logo);
         res.status(201).json(organization);
     } catch (error) {
         res.status(400).json({ error: error.message });
@@ -39,11 +39,23 @@ const getOrganizationById = async (req, res) => {
 // Update organization
 const updateOrganization = async (req, res) => {
     const { id } = req.params;
-    const { name } = req.body;
+    const { name, is_default, logo } = req.body;
 
     try {
-        await organizationService.updateOrganization(id, name);
+        await organizationService.updateOrganization(id, name, is_default || 0, logo);
         res.status(200).json({ message: 'Organization updated successfully' });
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+};
+
+// Update organization to default
+const updateOrganizationToDefault = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        await organizationService.updateOrganizationToDefault(id);
+        res.status(200).json({ message: 'Organization updated to default successfully' });
     } catch (error) {
         res.status(400).json({ error: error.message });
     }
@@ -66,5 +78,6 @@ module.exports = {
     getOrganizationsByUserId,
     getOrganizationById,
     updateOrganization,
+    updateOrganizationToDefault,
     deleteOrganization
 };

@@ -4,14 +4,14 @@ const { body } = require('express-validator');
 const authenticateToken = require("../middleware/auth");
 
 const registerValidation = [
-    body('username').isLength({ min: 3, max: 255 }).withMessage('Username must be between 3 and 255 characters'),
+    body('name').isLength({ min: 3, max: 15 }).withMessage('Name must be between 3 and 15 characters'),
     body('email').isEmail().withMessage('Please provide a valid email address'),
-    body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters long')
+    body('password').isLength({ min: 3 }).withMessage('Password must be at least 3 characters long')
 ];
 
 const loginValidation = [
     body('email').isEmail().withMessage('Please provide a valid email address'),
-    body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters long')
+    body('password').isLength({ min: 3 }).withMessage('Password must be at least 3 characters long')
 ];
 
 const router = express.Router();

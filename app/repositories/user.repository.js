@@ -1,12 +1,12 @@
 const db = require('../config/db');
 
 // Create a new user
-const createUser = async (username, email, hashedPassword) => {
+const createUser = async (name, email, hashedPassword, role) => {
     const result = await db.query(
-        "INSERT INTO users (username, email, password) VALUES (?, ?, ?)",
-        [username, email, hashedPassword]
+        "INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)",
+        [name, email, hashedPassword, role]
     );
-    return result.insertId;
+    return result ? result[0]?.insertId : null;
 };
 
 // Find a user by email
@@ -22,11 +22,17 @@ const findUserById = async (id) => {
 };
 
 // Update user details
-const updateUser = async (id, username, email, password) => {
+const updateUser = async (id, name, email, password) => {
     const result = await db.query(
-        "UPDATE users SET username = ?, email = ?, password = ? WHERE id = ?",
-        [username, email, password, id]
+        "UPDATE users SET name = ?, email = ?, password = ? WHERE id = ?",
+        [name, email, password, id]
     );
+    return result.affectedRows;
+};
+
+// Update user name
+const updateUserName = async (id, name) => {
+    const result = await db.query("UPDATE users SET name = ? WHERE id = ?", [name, id]);
     return result.affectedRows;
 };
 
@@ -36,4 +42,4 @@ const deleteUser = async (id) => {
     return result.affectedRows;
 };
 
-module.exports = { createUser, findUserByEmail, findUserById, updateUser, deleteUser };
+module.exports = { createUser, findUserByEmail, findUserById, updateUser, deleteUser, updateUserName };

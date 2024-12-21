@@ -2,7 +2,7 @@ const db = require("../config/db");
 
 const saveTag = async (tagData) => {
     const { name, organization_id, field_path, tag_type, addon_ids } = tagData;
-    
+
     // Prepare the SQL query to insert the new tag
     const [result] = await db.query(
         "INSERT INTO tags (name, organization_id, field_path, tag_type, addon_ids) VALUES (?, ?, ?, ?, ?)",
@@ -43,8 +43,12 @@ const existByKeyAndId = async (id, key) => {
     return rows[0].count > 0;
 };
 
-const findTags = async () => {
-    const [rows] = await db.query("SELECT * FROM tags");
+const findTags = async (addon_ids) => {
+    const [rows] = await db.query(`
+    SELECT * 
+    FROM tags 
+    WHERE JSON_CONTAINS(addon_ids, ?, '$')
+  `, [addon_ids]);
     return rows;
 };
 

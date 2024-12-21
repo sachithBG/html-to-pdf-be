@@ -6,4 +6,4 @@ CREATE TABLE profiles (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,    -- Tracks when the profile was created
     modified_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, -- Tracks last update
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-);
+) CHARSET=utf8mb4;

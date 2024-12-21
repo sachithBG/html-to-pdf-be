@@ -1,13 +1,15 @@
 const db = require('../config/db');  // Database connection
 
 // Create an organization
-const createOrganization = async (userId, name) => {
-    const query = 'INSERT INTO organizations (user_id, name) VALUES (?, ?)';
-    const [result] = await db.query(query, [userId, name]);
+const createOrganization = async (userId, name, is_default, logo) => {
+    const query = 'INSERT INTO organizations (user_id, name, is_default, logo) VALUES (?, ?, ?, ?)';
+    const [result] = await db.query(query, [userId, name, is_default, logo]);
     return {
         id: result.insertId,
         user_id: userId,
         name: name,
+        is_default: is_default,
+        logo: logo,
         created_at: new Date(),
         updated_at: new Date()
     };
@@ -35,9 +37,17 @@ const getOrganizationByUserAndName = async (userId, name) => {
 };
 
 // Update organization
-const updateOrganization = async (id, name) => {
-    const query = 'UPDATE organizations SET name = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?';
-    await db.query(query, [name, id]);
+const updateOrganization = async (id, name, is_default, logo) => {
+    const query = 'UPDATE organizations SET name = ?, is_default = ?, logo = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?';
+    await db.query(query, [name, is_default, logo, id]);
+};
+
+// Update organization to default
+const updateOrganizationToDefault = async (id) => {
+    const query = 'UPDATE organizations SET is_default = 0 WHERE id != ?';
+    await db.query(query, [id]);
+    const query2 = 'UPDATE organizations SET is_default = 1 WHERE id = ?';
+    await db.query(query2, [id]);
 };
 
 // Delete organization
@@ -52,5 +62,6 @@ module.exports = {
     getOrganizationById,
     getOrganizationByUserAndName,
     updateOrganization,
+    updateOrganizationToDefault,
     deleteOrganization
 };

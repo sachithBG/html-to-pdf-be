@@ -9,4 +9,4 @@ CREATE TABLE tags (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,  -- Timestamp for last update
     FOREIGN KEY (organization_id) REFERENCES organizations(id),  -- Foreign key constraint to organizations
     UNIQUE (organization_id, field_path)  -- Unique combination of organization_id and field_path
-);
+) CHARSET=utf8mb4;

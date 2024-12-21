@@ -20,7 +20,7 @@ const generateTokens = async (req, res) => {
         }
 
         // Generate access and refresh tokens
-        const { accessToken, refreshToken } = await tokenService.generateTokens(req.user.id, req.user.username, orgId);
+        const { accessToken, refreshToken } = await tokenService.generateTokens(req.user.id, req.user.name, orgId);
 
         // Send the tokens as response
         res.json({ accessToken, refreshToken });

@@ -19,6 +19,15 @@ router.get('/:userId', authenticateToken, profileController.getProfile);
 // Route for updating a profile
 router.put('/:userId', authenticateToken, profileController.updateProfile);
 
+// Route for updating a user's name
+router.put('/:userId/name', authenticateToken, profileController.updateUserName);
+
+// Route for updating a user's theme
+router.put('/:userId/theme', authenticateToken, profileController.updateProfileTheme);
+
+// Route for updating a user's avatar
+router.put('/:userId/avatar', authenticateToken, profileController.updateProfileAvatar);
+
 // Route for deleting a profile
 router.delete('/:userId', authenticateToken, profileController.deleteProfile);
 

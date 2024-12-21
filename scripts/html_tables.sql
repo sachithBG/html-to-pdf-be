@@ -10,4 +10,4 @@ CREATE TABLE html_tables (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,  -- Timestamp when the table is created
     modified_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,  -- Timestamp for last update
     FOREIGN KEY (organization_id) REFERENCES organizations(id)  -- Foreign key constraint to organizations
-);
+) CHARSET=utf8mb4;

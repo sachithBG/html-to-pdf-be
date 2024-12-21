@@ -16,8 +16,12 @@ const getAllAddons = async (userId) => {
     return await addonRepository.getAllAddons(userId);
 };
 
+const getAllAddonsByOrg = async (orgId) => {
+    return await addonRepository.getAllAddonsByOrg(orgId);
+};
+
 const deleteAddon = async (id) => {
     return await addonRepository.deleteAddon(id);
 };
 
-module.exports = { createAddon, updateAddon, getAddonById, getAllAddons, deleteAddon };
+module.exports = { createAddon, updateAddon, getAddonById, getAllAddons, deleteAddon, getAllAddonsByOrg };

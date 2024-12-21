@@ -8,6 +8,7 @@ const {
     getAddonById,
     getAllAddons,
     deleteAddon,
+    getAllAddonsByOrg,
 } = require("../controllers/addonManage.controller");
 
 const validateAddon = [check("name").notEmpty().withMessage("Name is required.")];
@@ -15,6 +16,7 @@ const validateAddon = [check("name").notEmpty().withMessage("Name is required.")
 router.post("/", authenticateToken, validateAddon, createAddon);
 router.put("/:id", authenticateToken, validateAddon, updateAddon);
 router.get("/", authenticateToken, getAllAddons);
+router.get("/:id/organization", authenticateToken, getAllAddonsByOrg);
 router.get("/:id", authenticateToken, getAddonById);
 router.delete("/:id", authenticateToken, deleteAddon);
 

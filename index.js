@@ -27,7 +27,7 @@ var corsOptions = {
   credentials: true,
 };
 app.use(cors(corsOptions));
-app.use(express.json({limit: '50mb'}));
+app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: false }));
 // app.use(
 //   cookieSession({
@@ -53,20 +53,21 @@ app.use("/api/v1/pdf-templates", require("./app/routes/pdfManage.route"));
 app.use("/api/v2/pdf", require("./app/routes/pdfManageV2.route"));
 
 app.use('/api/v1/tokens', require("./app/routes/token.routes"));
+app.use("/api/v1/s3", require("./app/routes/s3.route"));
 
 
 
 app.listen(PORT, () => console.log(`The server is running on port ${PORT}`));
 
 const triggerApi = () => {
-    const apiUrl = "http://localhost:4000/api/htmlToPdf"; // Adjust to your server's URL
-    axios.get(apiUrl, { /* Optional payload */ })
-        .then((response) => {
-            console.log("API called successfully:", response.data);
-        })
-        .catch((error) => {
-            console.error("Error calling API:", error.message);
-        });
+  const apiUrl = "http://localhost:4000/api/htmlToPdf"; // Adjust to your server's URL
+  axios.get(apiUrl, { /* Optional payload */ })
+    .then((response) => {
+      console.log("API called successfully:", response.data);
+    })
+    .catch((error) => {
+      console.error("Error calling API:", error.message);
+    });
 };
 
 // triggerApi();

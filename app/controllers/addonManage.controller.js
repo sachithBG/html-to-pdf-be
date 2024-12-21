@@ -36,6 +36,15 @@ const getAllAddons = async (req, res) => {
     }
 };
 
+const getAllAddonsByOrg = async (req, res) => {
+    try {
+        const addons = await addonService.getAllAddonsByOrg(req.params.id);
+        res.status(200).json(addons);
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+};
+
 const deleteAddon = async (req, res) => {
     try {
         await addonService.deleteAddon(req.params.id);
@@ -45,4 +54,4 @@ const deleteAddon = async (req, res) => {
     }
 };
 
-module.exports = { createAddon, updateAddon, getAddonById, getAllAddons, deleteAddon };
+module.exports = { createAddon, updateAddon, getAddonById, getAllAddons, deleteAddon, getAllAddonsByOrg };
