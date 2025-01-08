@@ -9,6 +9,7 @@ CREATE TABLE pdf_templates (
     margin JSON,
     displayHeaderFooter BOOLEAN DEFAULT true,
     defVal VARCHAR(255) DEFAULT '-',
+    external_key VARCHAR(255) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     modified_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (organization_id) REFERENCES organizations(id)
@@ -22,3 +23,5 @@ CREATE TABLE `pdf_template_addons` (
     FOREIGN KEY (`addon_id`) REFERENCES `addons`(`id`)                 -- Ensure addon_id exists in the addons table
 ) CHARSET=utf8mb4;
 
+-- ALTER TABLE pdf_templates 
+-- ADD COLUMN external_key VARCHAR(255) NOT NULL;

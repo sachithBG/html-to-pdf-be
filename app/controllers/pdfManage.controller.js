@@ -7,7 +7,7 @@ const reqManagerService = require("../services/requestManager.service");
 
 const savePdf = async (req, res) => {
     try {
-        const { name, headerContent, bodyContent, footerContent, json, margin, displayHeaderFooter, defVal, organization_id, addon_ids } = req.body;
+        const { name, headerContent, bodyContent, footerContent, json, margin, displayHeaderFooter, defVal, organization_id, addon_ids, external_key } = req.body;
 
         // Basic validation
         if (!name) {
@@ -19,9 +19,12 @@ const savePdf = async (req, res) => {
         if (displayHeaderFooter && !headerContent || !footerContent) {
             return res.status(400).json({ error: 'Header and footer content are required.' });
         }
-
+        if (!external_key) {
+            return res.status(400).json({ error: 'Type/Status is required.' });
+        }
         // Call service to save PDF
-        const pdf = await pdfService.savePdf(name, headerContent, bodyContent, footerContent, json, margin, displayHeaderFooter, defVal, organization_id, addon_ids);
+        const pdf = await pdfService.savePdf(name, headerContent, bodyContent, footerContent, json, margin, displayHeaderFooter, defVal,
+            organization_id, addon_ids, external_key);
 
         res.status(201).json({
             message: 'PDF saved successfully!',
@@ -39,7 +42,8 @@ const savePdf = async (req, res) => {
 const updatePdf = async (req, res) => {
     try {
         const { id } = req.params;
-        const { name, headerContent, bodyContent, footerContent, json, margin, displayHeaderFooter, defVal, organization_id, addon_ids } = req.body;
+        const { name, headerContent, bodyContent, footerContent, json, margin, displayHeaderFooter, defVal, organization_id,
+            addon_ids, external_key } = req.body;
 
         // Basic validation
         if (!name) {
@@ -51,9 +55,12 @@ const updatePdf = async (req, res) => {
         if (displayHeaderFooter && !headerContent || !footerContent) {
             return res.status(400).json({ error: 'Header and footer content are required.' });
         }
-
+        if (!external_key) {
+            return res.status(400).json({ error: 'Type/Status is required.' });
+        }
         // Call service to update PDF
-        const updatedPdf = await pdfService.updatePdf(id, name, headerContent, bodyContent, footerContent, json, margin, displayHeaderFooter, defVal, organization_id, addon_ids);
+        const updatedPdf = await pdfService.updatePdf(id, name, headerContent, bodyContent, footerContent, json,
+            margin, displayHeaderFooter, defVal, organization_id, addon_ids, external_key);
 
         res.status(200).json({
             message: 'PDF updated successfully!',
@@ -258,6 +265,22 @@ const generatePdfWithData = async (req, res) => {
     }
 }
 
+const getTemplateByExternalKeyAndAddon = async (req, res) => {
+    try {
+        const { externalKey, addonName } = req.query; // Assuming query parameters are used
+        if (!externalKey || !addonName) {
+            return res.status(400).json({ message: 'Missing externalKey or addonName.' });
+        }
+
+        const template = await reqManagerService.getTemplateByExternalKeyAndAddon(externalKey, addonName);
+        res.status(200).json(template);
+    } catch (error) {
+        console.error('Error fetching template by external key and addon name:', error);
+        res.status(500).json({ message: 'Failed to fetch template.' });
+    }
+};
+
+
 const testPdf = async (req, res) => {
     try {
         console.log("requested");
@@ -384,5 +407,5 @@ module.exports = {
     generatePdf,
     testPdf,
     generatePdfWithData,
-
+    getTemplateByExternalKeyAndAddon
 }

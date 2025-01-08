@@ -2,12 +2,12 @@ const db = require('../config/db'); // Import the centralized DB connection
 
 // Repository method to save PDF data
 const savePdf = async (name, headerContent, bodyContent, footerContent, json, margin, displayHeaderFooter = true,
-    defVal = "-", organization_id, addon_ids) => {
+    defVal = "-", organization_id, addon_ids, external_key) => {
     // Insert PDF data into pdf_templates table
     const sql = 'INSERT INTO pdf_templates (name, organization_id, header_content, body_content, footer_content, ' +
-        'json, margin, displayHeaderFooter, defVal) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)';
+        'json, margin, displayHeaderFooter, defVal, external_key) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
     const params = [name, organization_id, headerContent, bodyContent, footerContent, JSON.stringify(json),
-        JSON.stringify(margin), displayHeaderFooter, defVal];
+        JSON.stringify(margin), displayHeaderFooter, defVal, external_key];
 
     const [result] = await db.query(sql, params);
     const pdfTemplateId = result.insertId;
@@ -24,12 +24,12 @@ const savePdf = async (name, headerContent, bodyContent, footerContent, json, ma
 
 // Repository method to update a PDF
 const updatePdf = async (id, name, headerContent, bodyContent, footerContent, json, margin, displayHeaderFooter = true,
-    defVal = "-", organization_id, addon_ids) => {
+    defVal = "-", organization_id, addon_ids, external_key) => {
     // Update PDF template data in pdf_templates table
     const sql = 'UPDATE pdf_templates SET name = ?, organization_id = ?, header_content = ?, body_content = ?, ' +
-        'footer_content = ?, json = ?, margin = ?, displayHeaderFooter = ?, defVal = ? WHERE id = ?';
+        'footer_content = ?, json = ?, margin = ?, displayHeaderFooter = ?, defVal = ?, external_key = ? WHERE id = ?';
     const params = [name, organization_id, headerContent, bodyContent, footerContent, JSON.stringify(json),
-        JSON.stringify(margin), displayHeaderFooter, defVal, id];
+        JSON.stringify(margin), displayHeaderFooter, defVal, external_key, id];
 
     const [result] = await db.query(sql, params);
 
@@ -144,6 +144,7 @@ const getDataAsPage = async (sortOrder, startFrom, to, sortBy, addonsFilter, sea
             pt.defVal,
             pt.created_at,
             pt.modified_at,
+            pt.external_key,
             GROUP_CONCAT(addons.name) AS addons
         FROM 
             pdf_templates pt
@@ -233,7 +234,35 @@ const getDataAsPage = async (sortOrder, startFrom, to, sortBy, addonsFilter, sea
     }
 };
 
+// Repository Method to Check Uniqueness
+const existsByExternalKeyAndAddon = async (external_key, addonIds) => {
+    const query = `
+        SELECT COUNT(*) AS count
+        FROM pdf_template_addons
+        WHERE addon_id IN (?) 
+          AND EXISTS (
+              SELECT 1 
+              FROM pdf_templates
+              WHERE id = pdf_template_addons.pdf_template_id 
+                AND external_key = ?
+          )
+    `;
+    const [rows] = await db.query(query, [addonIds, external_key]);
+    return rows[0].count > 0; // Return true if a match exists
+};
 
+// Repository Method: Get Template by externalKey and addon.name
+const getTemplateByExternalKeyAndAddon = async (externalKey, addonName) => {
+    const query = `
+        SELECT pt.*
+        FROM pdf_templates pt
+        JOIN pdf_template_addons pta ON pt.id = pta.pdf_template_id
+        JOIN addons a ON pta.addon_id = a.id
+        WHERE pt.external_key = ? AND a.name = ?
+    `;
+    const [rows] = await db.query(query, [externalKey, addonName]);
+    return rows.length > 0 ? rows[0] : null; // Return the first matching template or null
+};
 
 
 
@@ -353,4 +382,6 @@ module.exports = {
     existsByNameIdNot,
     getDataAsPage,
     deletePdf,
+    existsByExternalKeyAndAddon,
+    getTemplateByExternalKeyAndAddon
 };

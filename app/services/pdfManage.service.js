@@ -9,12 +9,18 @@ const { PdfTemplate } = require("./vm/pdfTemplate");
 
 // Service method to save PDF
 const savePdf = async (name, headerContent, bodyContent, footerContent, json, margin,
-    displayHeaderFooter = true, defVal = "-", organization_id, addon_ids) => {
+    displayHeaderFooter = true, defVal = "-", organization_id, addon_ids, external_key) => {
     try {
         // Check if PDF with the same name already exists
         const existingPdf = await pdfRepository.existsByName(name);
         if (existingPdf) {
             throw new Error('A PDF with this name already exists.');
+        }
+
+        // Check if a template with the same externalKey and addon already exists
+        const existingExternalKeyAndAddon = await pdfRepository.existsByExternalKeyAndAddon(external_key, addon_ids);
+        if (existingExternalKeyAndAddon) {
+            throw new Error('A template with the same external key and addon already exists.');
         }
 
         // Call repository method to save PDF
@@ -40,7 +46,7 @@ const savePdf = async (name, headerContent, bodyContent, footerContent, json, ma
 
 // Service method to update PDF
 const updatePdf = async (id, name, headerContent, bodyContent, footerContent, json, margin,
-    displayHeaderFooter = true, defVal = "-", organization_id, addon_ids) => {
+    displayHeaderFooter = true, defVal = "-", organization_id, addon_ids, external_key) => {
     try {
         // Check if PDF with the same name already exists, but not the current one being updated
         const existingPdf = await pdfRepository.existsByNameIdNot(name, id);
@@ -50,7 +56,7 @@ const updatePdf = async (id, name, headerContent, bodyContent, footerContent, js
 
         // Call repository method to update PDF
         const updated = await pdfRepository.updatePdf(id, name, headerContent, bodyContent, footerContent, json,
-            margin, displayHeaderFooter, defVal, organization_id, addon_ids);
+            margin, displayHeaderFooter, defVal, organization_id, addon_ids, external_key);
         if (!updated) {
             throw new Error('PDF not found or failed to update.');
         }
@@ -122,6 +128,15 @@ const deletePdf = async (id) => {
         throw new Error(error);//'An error occurred while deleting the PDF.'
     }
 };
+
+const getTemplateByExternalKeyAndAddon = async (externalKey, addonName) => {
+    const template = await pdfRepository.getTemplateByExternalKeyAndAddon(externalKey, addonName);
+    if (!template) {
+        throw new Error('No template found with the given external key and addon name.');
+    }
+    return template;
+};
+
 
 // Function to convert HTML content to PDF
 const convertHtmlToPdf = async (headerWithBase64, bodyContent, footerWithBase64, margin,
@@ -279,5 +294,6 @@ module.exports = {
     replaceImagesWithBase64,
     convertToBase64,
     convertTestPdf,
-    generateTableHtml
+    generateTableHtml,
+    getTemplateByExternalKeyAndAddon
 }

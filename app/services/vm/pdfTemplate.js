@@ -15,6 +15,7 @@ class PdfTemplate {
         this.addon_id = data.addon_id;
         this.addon_name = data.addon_name;
         this.addons = data.addons;
+        this.external_key = data.external_key ? Number(data.external_key) : undefined
     }
 }
 

@@ -45,6 +45,7 @@ app.use("/api/v1/users", require("./app/routes/user.route"));
 app.use("/api/v1/profiles", require("./app/routes/profile.route"));
 app.use("/api/v1/organizations", require("./app/routes/organization.route"));
 app.use("/api/v1/addons", require("./app/routes/addonManage.route"));
+app.use("/api/v1/external-keys", require("./app/routes/externalKey.route"));
 
 app.use("/api/v1/tags", require("./app/routes/tagManage.route"));
 app.use("/api/v1/dynamic-html-table", require("./app/routes/dynamicHtmlTable.route"));
