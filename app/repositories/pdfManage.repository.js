@@ -8,7 +8,7 @@ const savePdf = async (name, headerContent, bodyContent, footerContent, json, ma
         'json, margin, displayHeaderFooter, defVal) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)';
     const params = [name, organization_id, headerContent, bodyContent, footerContent, JSON.stringify(json),
         JSON.stringify(margin), displayHeaderFooter, defVal];
-    
+
     const [result] = await db.query(sql, params);
     const pdfTemplateId = result.insertId;
 
@@ -30,9 +30,9 @@ const updatePdf = async (id, name, headerContent, bodyContent, footerContent, js
         'footer_content = ?, json = ?, margin = ?, displayHeaderFooter = ?, defVal = ? WHERE id = ?';
     const params = [name, organization_id, headerContent, bodyContent, footerContent, JSON.stringify(json),
         JSON.stringify(margin), displayHeaderFooter, defVal, id];
-    
+
     const [result] = await db.query(sql, params);
-    
+
     if (result.affectedRows > 0) {
         // Update addon associations in pdf_template_addons
         // First, delete previous addon associations
@@ -105,7 +105,7 @@ const existsByName = async (name) => {
         WHERE name = ?;
     `;
     const params = [name];
-    
+
     try {
         const [results] = await db.query(sql, params);
         return results[0].res === 1;
@@ -134,21 +134,125 @@ const existsByNameIdNot = async (name, id) => {
 
 // Repository method to get paginated data
 const getDataAsPage = async (sortOrder, startFrom, to, sortBy, addonsFilter, search, organization_id) => {
+    let sql = `
+        SELECT 
+            pt.id,
+            pt.organization_id,
+            pt.name,
+            pt.margin,
+            pt.displayHeaderFooter,
+            pt.defVal,
+            pt.created_at,
+            pt.modified_at,
+            GROUP_CONCAT(addons.name) AS addons
+        FROM 
+            pdf_templates pt
+        LEFT JOIN 
+            pdf_template_addons pta ON pt.id = pta.pdf_template_id
+        LEFT JOIN
+            addons ON addons.id = pta.addon_id
+    `;
+    let countSql = `
+        SELECT 
+            COUNT(DISTINCT pt.id) AS total
+        FROM 
+            pdf_templates pt
+        LEFT JOIN 
+            pdf_template_addons pta ON pt.id = pta.pdf_template_id
+    `;
+
     const filters = [];
-    
-    // Base query part
-    let sql = 'FROM pdf_templates';
-    
-    // Add JOIN for pdf_template_addons if filters require it
-    if (addonsFilter && addonsFilter.length > 0) {
-        sql += ' JOIN pdf_template_addons ON pdf_templates.id = pdf_template_addons.pdf_template_id';
+    let havingClause = '';
+
+    sql += ' WHERE 1=1';
+    countSql += ' WHERE 1=1';
+
+    // Organization filter
+    if (organization_id) {
+        sql += ' AND pt.organization_id = ?';
+        countSql += ' AND pt.organization_id = ?';
+        filters.push(organization_id);
     }
+
+    // Search filter
+    if (search && search.trim().length > 0) {
+        sql += ' AND (pt.name LIKE ?)';
+        countSql += ' AND (pt.name LIKE ?)';
+        filters.push(`%${search}%`);
+    }
+
+    // Addons filter
+    if (addonsFilter && addonsFilter?.length > 0) {
+        const addonIds = addonsFilter.map(Number);
+        havingClause = ` HAVING COUNT(DISTINCT CASE WHEN pta.addon_id IN (${addonIds.map(() => '?').join(',')}) THEN pta.addon_id END) = ?`;
+        filters.push(...addonIds, addonIds.length);
+    }
+
+    // Add GROUP BY clause with all non-aggregated columns
+    sql += `
+        GROUP BY 
+            pt.id, 
+            pt.organization_id, 
+            pt.name, 
+            pt.margin, 
+            pt.displayHeaderFooter, 
+            pt.defVal, 
+            pt.created_at, 
+            pt.modified_at
+    `;
+
+    // Apply the HAVING clause if applicable
+    if (havingClause) {
+        sql += havingClause;
+    }
+
+    // Sort order
+    sql += ` ORDER BY pt.${sortBy} ${sortOrder === 'asc' ? 'ASC' : 'DESC'}`;
+
+    // Pagination
+    sql += ' LIMIT ?, ?';
+    filters.push(Number(startFrom), Number(to));
+
+    try {
+        const [data] = await db.query(sql, filters);
+        const [totalResult] = await db.query(countSql, filters.slice(0, addonsFilter ? -(addonsFilter.length + 2) : -2)); // Exclude pagination and HAVING params
+        const total = totalResult[0]?.total || 0;
+
+        // Convert the `addons` field from a comma-separated string to an array
+        const processedData = data.map(row => ({
+            ...row,
+            addons: row.addons ? row.addons.split(',') : [], // Convert to array of numbers
+        }));
+
+        return {
+            data: processedData,
+            total,
+        };
+    } catch (error) {
+        throw new Error(`Error fetching data: ${error.message}`);
+    }
+};
+
+
+
+
+
+
+const getDataAsPage2 = async (sortOrder, startFrom, to, sortBy, addonsFilter, search, organization_id) => {
+    const filters = [];
+
+    // Base query part (always join pdf_template_addons and addons)
+    let sql = 'FROM pdf_templates';
+
+    // Join pdf_template_addons and addons to get associated addons
+    sql += ' LEFT JOIN pdf_template_addons ON pdf_templates.id = pdf_template_addons.pdf_template_id';
+    sql += ' LEFT JOIN addons ON pdf_template_addons.addon_id = addons.id';
 
     // WHERE condition
     sql += ' WHERE 1=1';
 
     // Search filter (if provided)
-    if (search) {
+    if (search && search !== null) {
         sql += ' AND pdf_templates.name LIKE ?';
         filters.push(`%${search}%`);
     }
@@ -159,7 +263,7 @@ const getDataAsPage = async (sortOrder, startFrom, to, sortBy, addonsFilter, sea
         filters.push(organization_id);
     }
 
-    // Addons filter (if provided)
+    // Addons filter (only apply if it's not null or empty)
     if (addonsFilter && addonsFilter.length > 0) {
         const addonIds = addonsFilter.split(',').map(id => Number(id));
         sql += ' AND pdf_template_addons.addon_id IN (?)';
@@ -168,6 +272,7 @@ const getDataAsPage = async (sortOrder, startFrom, to, sortBy, addonsFilter, sea
 
     // Sorting (if provided)
     if (sortBy) {
+        if (!sortBy.startsWith('pdf_templates.')) sortBy = `pdf_templates.${sortBy}`;
         sql += ` ORDER BY ${sortBy} ${sortOrder}`;
     }
 
@@ -176,17 +281,41 @@ const getDataAsPage = async (sortOrder, startFrom, to, sortBy, addonsFilter, sea
     filters.push(Number(startFrom), Number(to));
 
     // Query for the actual paginated data
-    const [results] = await db.query(`SELECT DISTINCT pdf_templates.* ${sql} ${limitSql}`, filters);
+    const [results] = await db.query(`
+        SELECT DISTINCT pdf_templates.id, pdf_templates.name, pdf_templates.created_at, pdf_templates.modified_at, addons.name AS addon_name
+        ${sql} 
+        ${limitSql}`, filters);
 
     // Query to get the total number of distinct records (using COUNT)
     const [countResult] = await db.query(`SELECT COUNT(DISTINCT pdf_templates.id) ${sql}`, filters);
 
-    // Convert JSON fields to readable format
-    const data = results.map((pdf) => {
-        pdf.json = JSON.parse(pdf.json);
-        // pdf.margin = JSON.parse(pdf.margin); // Uncomment if you need margin processing
-        return pdf;
+    // Process results to group addons by template id
+    const data = [];
+    let currentTemplate = null;
+
+    results.forEach((pdf) => {
+        // If this is a new template, create a new object
+        if (!currentTemplate || currentTemplate.id !== pdf.id) {
+            if (currentTemplate) data.push(currentTemplate);
+            currentTemplate = {
+                id: pdf.id,
+                name: pdf.name,
+                created_at: pdf.created_at,
+                modified_at: pdf.modified_at,
+                addons: []
+            };
+        }
+
+        // If addon name exists, push it into the addons array
+        if (pdf.addon_name) {
+            currentTemplate.addons.push(pdf.addon_name);
+        }
     });
+
+    // Push the last template into the data array
+    if (currentTemplate) {
+        data.push(currentTemplate);
+    }
 
     // Return both the paginated data and the total count
     return {
@@ -194,6 +323,12 @@ const getDataAsPage = async (sortOrder, startFrom, to, sortBy, addonsFilter, sea
         total: countResult[0]['COUNT(DISTINCT pdf_templates.id)'] // Extract total count from the query result
     };
 };
+
+
+
+
+
+
 
 
 // Repository method to delete PDF by ID

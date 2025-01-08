@@ -44,12 +44,23 @@ const existByKeyAndId = async (id, key) => {
 };
 
 const findTags = async (addon_ids) => {
+    if (!addon_ids || addon_ids.length === 0) {
+        return []; // Return an empty array if no addon_ids are provided
+    }
+
+    // Build the dynamic query with OR conditions for each addon_id
+    const conditions = addon_ids.map(id => {
+        return `JSON_CONTAINS(addon_ids, JSON_ARRAY(?), '$')`;
+    }).join(' OR ');
+
+    // Execute the query with the addon_ids as individual parameters
     const [rows] = await db.query(`
-    SELECT * 
-    FROM tags 
-    WHERE JSON_CONTAINS(addon_ids, ?, '$')
-  `, [addon_ids]);
-    return rows;
+        SELECT * 
+        FROM tags 
+        WHERE ${conditions}
+    `, addon_ids);
+
+    return rows
 };
 
 const deleteTag = async (id) => {

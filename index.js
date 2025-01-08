@@ -51,6 +51,7 @@ app.use("/api/v1/dynamic-html-table", require("./app/routes/dynamicHtmlTable.rou
 
 app.use("/api/v1/pdf-templates", require("./app/routes/pdfManage.route"));
 app.use("/api/v2/pdf", require("./app/routes/pdfManageV2.route"));
+app.use("/api/v1/logs", require("./app/routes/requestManager.route"));
 
 app.use('/api/v1/tokens', require("./app/routes/token.routes"));
 app.use("/api/v1/s3", require("./app/routes/s3.route"));

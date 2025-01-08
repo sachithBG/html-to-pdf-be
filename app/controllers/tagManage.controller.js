@@ -41,7 +41,9 @@ const findTagById = async (req, res) => {
 const findTags = async (req, res) => {
     try {
         const { addon_ids } = req.query;
-        const tags = await tagService.findTags(addon_ids);
+        const tags = await tagService.findTags(addon_ids
+            ? addon_ids.map(id => Number(id))
+            : []);
         res.status(200).json(tags);
     } catch (err) {
         res.status(400).json({ error: err.message });

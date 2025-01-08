@@ -3,6 +3,7 @@ const { convertHtmlToPdf, convertTestPdf, replaceImagesWithBase64 } = require(".
 const { imageUrl, replacePlaceholders, tempData, tableData } = require("../utils/htmlConfig.util");
 
 const pdfService = require('../services/pdfManage.service');
+const reqManagerService = require("../services/requestManager.service");
 
 const savePdf = async (req, res) => {
     try {
@@ -122,7 +123,11 @@ const getPdfByName = async (req, res) => {
 const getDataAsPage = async (req, res) => {
     try {
         const { sortOrder, startFrom, to, sortBy, addonsFilter, search, organization_id } = req.query;
-
+        if (!organization_id) {
+            return res.status(404).json({
+                error: 'Organization id required',
+            });
+        }
         // Call service to get paginated data
         const data = await pdfService.getDataAsPage(sortOrder, startFrom, to, sortBy, addonsFilter, search, organization_id);
 
@@ -191,14 +196,35 @@ const generatePdf = async (req, res) => {
 };
 
 const generatePdfWithData = async (req, res) => {
-    let { headerContent, bodyContent, footerContent, json } = req.body; // Get HTML content from the request body
+    let { headerContent, bodyContent, footerContent, json, defVal, displayHeaderFooter,
+        margin, organization_id, name
+    } = req.body; // Get HTML content from the request body
 
     if (!bodyContent) {
         return res.status(400).json({ error: "HTML content is required" });
     }
+    const userId = req.user.id; // Assuming `req.user` contains authenticated user info
+    // const metadata = req.body; // Extract metadata about the request (e.g., template or parameters)
     try {
-        const defVal = '-', displayHeaderFooter = true;
-        margin = { top: "200px", bottom: "150px", left: "20px", right: "20px" };
+        // Apply defaults to missing fields
+        json = json || {}; // Set default to empty object if not provided
+        defVal = defVal || '-'; // Default value for defVal if not provided
+        displayHeaderFooter = displayHeaderFooter !== undefined ? displayHeaderFooter : true; // Default true if not provided
+
+        // Default margin if not provided
+        margin = margin || {};
+        margin.top = margin.t ? margin.t + 'px' : "200px"; // Ensure margin.top is set and add 'px'
+        margin.bottom = margin.b ? margin.b + 'px' : "150px"; // Ensure margin.bottom is set and add 'px'
+        margin.left = margin.l ? margin.l + 'px' : "20px"; // Ensure margin.left is set and add 'px'
+        margin.right = margin.r ? margin.r + 'px' : "20px"; // Ensure margin.right is set and add 'px'
+
+        // Build the final margin object with proper units
+        margin = {
+            top: margin.top,
+            bottom: margin.bottom,
+            left: margin.left,
+            right: margin.right,
+        };
         headerContent = replacePlaceholders(headerContent, json, defVal);
         bodyContent = replacePlaceholders(bodyContent, json, defVal);
         footerContent = replacePlaceholders(footerContent, json, defVal);
@@ -210,7 +236,7 @@ const generatePdfWithData = async (req, res) => {
         bodyContent = `<html><body><div>${bodyContent}</div></body></html>`;
 
         console.log("Generating PDF...");
-        const pdfBuffer = await convertHtmlToPdf(headerContent, bodyContent, footerContent, margin, displayHeaderFooter);
+        const pdfBuffer = await convertHtmlToPdf(headerContent, bodyContent, footerContent, margin, displayHeaderFooter == 1);
 
         // Send the generated PDF as a base64 string or as a buffer
         const base64Pdf = await Buffer.from(pdfBuffer).toString("base64");
@@ -221,6 +247,14 @@ const generatePdfWithData = async (req, res) => {
     } catch (error) {
         console.error("Error generating PDF:", error);
         res.status(500).json({ error: "Failed to generate PDF" });
+    } finally {
+        try {
+            // Log the request
+            await reqManagerService.logRequest(organization_id, { name, userId });
+        } catch (e) {
+            console.error("Error logging PDF request:", error);
+        }
+
     }
 }
 
@@ -228,7 +262,7 @@ const testPdf = async (req, res) => {
     try {
         console.log("requested");
 
-        const htmlCOntent = `
+        const htmlContent = `
         <html>
             <body>
                 <h1 style="font-family: Arial, sans-serif; color: #333;">HTML to PDF Conversion</h1>
@@ -298,12 +332,12 @@ const testPdf = async (req, res) => {
         </html>
     `
         // Generate PDF with header and footer
-        await convertTestPdf(htmlCOntent);
-        res.json('ok');
+        const data = await convertTestPdf(htmlContent);
+        res.json({ pdf: await Buffer.from(data).toString("base64") });
 
     } catch (e) {
         res.status(500).json({
-            version: "v2",
+            version: "v1",
             message: e,
         });
         console.log(e);
@@ -350,5 +384,5 @@ module.exports = {
     generatePdf,
     testPdf,
     generatePdfWithData,
-    
+
 }

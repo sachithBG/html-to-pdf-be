@@ -93,3 +93,10 @@ CREATE TABLE `pdf_template_addons` (
     FOREIGN KEY (`pdf_template_id`) REFERENCES `pdf_templates`(`id`),  -- Ensure pdf_template_id exists in the pdf_templates table
     FOREIGN KEY (`addon_id`) REFERENCES `addons`(`id`)                 -- Ensure addon_id exists in the addons table
 ) CHARSET=utf8mb4;
+
+CREATE TABLE pdf_request_logs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    organization_id INT NOT NULL,  --  tracking organization IDs
+    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+    metadata JSON DEFAULT NULL     -- Store additional info as JSON (e.g., template name, parameters)
+);

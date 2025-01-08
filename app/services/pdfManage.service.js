@@ -5,6 +5,7 @@ const puppeteer = require('puppeteer');
 const https = require('https');
 
 const pdfRepository = require('../repositories/pdfManage.repository');
+const { PdfTemplate } = require("./vm/pdfTemplate");
 
 // Service method to save PDF
 const savePdf = async (name, headerContent, bodyContent, footerContent, json, margin,
@@ -20,13 +21,13 @@ const savePdf = async (name, headerContent, bodyContent, footerContent, json, ma
         const pdfId = await pdfRepository.savePdf(name, headerContent, bodyContent, footerContent,
             json, margin, displayHeaderFooter, defVal, organization_id, addon_ids);
 
-        return { 
-            id: pdfId, 
-            name, 
-            headerContent, 
-            bodyContent, 
-            footerContent, 
-            json, 
+        return {
+            id: pdfId,
+            name,
+            headerContent,
+            bodyContent,
+            footerContent,
+            json,
             margin,
             displayHeaderFooter,
             defVal
@@ -53,14 +54,14 @@ const updatePdf = async (id, name, headerContent, bodyContent, footerContent, js
         if (!updated) {
             throw new Error('PDF not found or failed to update.');
         }
-        
-        return { 
-            id, 
-            name, 
-            headerContent, 
-            bodyContent, 
-            footerContent, 
-            json, 
+
+        return {
+            id,
+            name,
+            headerContent,
+            bodyContent,
+            footerContent,
+            json,
             margin,
             displayHeaderFooter,
             defVal
@@ -79,7 +80,7 @@ const getPdfById = async (id) => {
         if (!pdf) {
             throw new Error('PDF not found.');
         }
-        return pdf;
+        return new PdfTemplate(pdf);
     } catch (error) {
         console.error('Error retrieving PDF:', error);
         throw new Error(error);//'An error occurred while retrieving the PDF.'
@@ -123,38 +124,41 @@ const deletePdf = async (id) => {
 };
 
 // Function to convert HTML content to PDF
-const convertHtmlToPdf = async (headerWithBase64, bodyContent, footerWithBase64, margin, 
-  displayHeaderFooter
+const convertHtmlToPdf = async (headerWithBase64, bodyContent, footerWithBase64, margin,
+    displayHeaderFooter
 ) => {
-  try {
-    // Launch Puppeteer browser instance
-    const browser = await puppeteer.launch();
-    const page = await browser.newPage();
+    try {
+        // Launch Puppeteer browser instance
+        const browser = await puppeteer.launch({
+            args: ['--no-sandbox', '--disable-setuid-sandbox'],
+            headless: true, // Ensure headless mode is enabled
+        });
+        const page = await browser.newPage();
 
-    // Set the HTML content provided in the request
-    await page.setContent(bodyContent);
-    console.log(process.env.PDF_PATH)
-    // Generate PDF with header and footer
-    const pdfBuffer = await page.pdf({
-      
-      path: path.resolve(process.env.PDF_PATH || "./output.pdf"), // Path to save the PDF file
-      format: "A4",
-      displayHeaderFooter: displayHeaderFooter,
-      headerTemplate: headerWithBase64,
-      footerTemplate: footerWithBase64,
-      margin: {
-        top: margin.top || "200px",
-        bottom: margin.bottom || "150px",
-        left: margin.left || "20px",
-        right: margin.right || "20px",
-      },
-    });
+        // Set the HTML content provided in the request
+        await page.setContent(bodyContent);
+        console.log(process.env.PDF_PATH)
+        // Generate PDF with header and footer
+        const pdfBuffer = await page.pdf({
 
-    await browser.close();
-    return pdfBuffer;
-  } catch (error) {
-    throw new Error("Failed to convert HTML to PDF: " + error.message);
-  }
+            path: path.resolve(process.env.PDF_PATH || "./output.pdf"), // Path to save the PDF file
+            format: "A4",
+            displayHeaderFooter: displayHeaderFooter,
+            headerTemplate: headerWithBase64,
+            footerTemplate: footerWithBase64,
+            margin: {
+                top: margin.top || "200px",
+                bottom: margin.bottom || "150px",
+                left: margin.left || "20px",
+                right: margin.right || "20px",
+            },
+        });
+
+        await browser.close();
+        return pdfBuffer;
+    } catch (error) {
+        throw new Error("Failed to convert HTML to PDF: " + error.message);
+    }
 };
 
 const replaceImagesWithBase64 = async (htmlContent) => {
@@ -197,65 +201,66 @@ const convertToBase64 = (url) => {
     });
 };
 
-const convertTestPdf = async () => {
-  const browser = await puppeteer.launch({
-    args: ["--no-sandbox", "--disable-gpu"],
-  });
-  const page = await browser.newPage();
-  await page.setRequestInterception(true);
-  page.on("request", (request) => {
-    if (["image", "stylesheet", "font"].includes(request.resourceType())) {
-      request.abort();
-    } else {
-      request.continue();
-    }
-  });
+const convertTestPdf = async (htmlContent) => {
+    const browser = await puppeteer.launch({
+        args: ["--no-sandbox", "--disable-gpu"],
+    });
+    const page = await browser.newPage();
+    await page.setRequestInterception(true);
+    page.on("request", (request) => {
+        if (["image", "stylesheet", "font"].includes(request.resourceType())) {
+            request.abort();
+        } else {
+            request.continue();
+        }
+    });
 
-  await page.setContent(htmlCOntent);
-  await page.pdf({
-    path: "output.pdf",
-    format: "A4",
-    displayHeaderFooter: true, // Enable header and footer
-    headerTemplate: `
+    await page.setContent(htmlContent);
+    const pdfBuffer = await page.pdf({
+        path: "output.pdf",
+        format: "A4",
+        displayHeaderFooter: true, // Enable header and footer
+        headerTemplate: `
             <div style="font-size: 10px; text-align: center; width: 100%;">
                 <img src="${await convertToBase64(
-                  imageUrl
-                )}" style="height: 30px;" />
+            imageUrl
+        )}" style="height: 30px;" />
                 <span>Custom Header - Page <span class="pageNumber"></span> of <span class="totalPages"></span></span>
             </div>
         `,
-    footerTemplate: `
+        footerTemplate: `
             <div style="font-size: 10px; text-align: center; width: 100%; border-top: 1px solid #ccc; padding-top: 5px;">
             <img src="${await convertToBase64(
-              imageUrl
-            )}" style="height: 30px;" />
+            imageUrl
+        )}" style="height: 30px;" />
                 <span>Custom Footer - Page <span class="pageNumber"></span> of <span class="totalPages">
                 </span></span>
             </div>
         `,
-    margin: {
-      top: "80px", // Adjust to fit the header
-      bottom: "80px", // Adjust to fit the footer
-      left: "20px",
-      right: "20px",
-    },
-  });
+        margin: {
+            top: "80px", // Adjust to fit the header
+            bottom: "80px", // Adjust to fit the footer
+            left: "20px",
+            right: "20px",
+        },
+    });
 
-  await browser.close();
+    await browser.close();
+    return pdfBuffer;
 };
 
 const generateTableHtml = (tableData) => {
     const { rows, cellStyles, customHtml, numColumns } = tableData;
-    
+
     const tableBody = rows.map((row, rowIndex) => {
         return `
         <tr style="background-color: ${cellStyles[rowIndex]?.backgroundColor};">
             ${Array.from({ length: numColumns }).map((_, colIndex) => {
-                return `
+            return `
                 <td style="background-color: ${cellStyles[colIndex].backgroundColor}; font-size: ${cellStyles[colIndex].fontSize}; padding: ${cellStyles[colIndex].padding}; color: ${cellStyles[colIndex].color}; border: 1px solid #ddd; text-align: left;">
                     ${row[`col${colIndex + 1}`] || ""}
                 </td>`;
-            }).join("")}
+        }).join("")}
         </tr>`;
     }).join("");
 
@@ -264,9 +269,9 @@ const generateTableHtml = (tableData) => {
 };
 
 module.exports = {
-  savePdf,
+    savePdf,
     updatePdf,
-  getPdfById,
+    getPdfById,
     getPdfByName,
     getDataAsPage,
     deletePdf,
