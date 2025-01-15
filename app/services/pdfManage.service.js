@@ -25,7 +25,7 @@ const savePdf = async (name, headerContent, bodyContent, footerContent, json, ma
 
         // Call repository method to save PDF
         const pdfId = await pdfRepository.savePdf(name, headerContent, bodyContent, footerContent,
-            json, margin, displayHeaderFooter, defVal, organization_id, addon_ids);
+            json, margin, displayHeaderFooter, defVal, organization_id, addon_ids, external_key);
 
         return {
             id: pdfId,
@@ -72,6 +72,20 @@ const updatePdf = async (id, name, headerContent, bodyContent, footerContent, js
             displayHeaderFooter,
             defVal
         };
+    } catch (error) {
+        console.error('Error updating PDF:', error);
+        throw new Error(error);//'An error occurred while updating the PDF.'
+    }
+};
+
+const updateDummyData = async (id, json) => {
+    try {
+        // Call repository method to update PDF
+        const updated = await pdfRepository.updateDummyData(id, json);
+        if (!updated) {
+            throw new Error('PDF not found or failed to update.');
+        }
+        return { id };
     } catch (error) {
         console.error('Error updating PDF:', error);
         throw new Error(error);//'An error occurred while updating the PDF.'
@@ -295,5 +309,6 @@ module.exports = {
     convertToBase64,
     convertTestPdf,
     generateTableHtml,
-    getTemplateByExternalKeyAndAddon
+    getTemplateByExternalKeyAndAddon,
+    updateDummyData
 }

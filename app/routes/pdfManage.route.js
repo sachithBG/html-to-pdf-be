@@ -4,11 +4,13 @@ const authenticateToken = require("../middleware/auth");
 
 // Import the controller methods
 const { savePdf, updatePdf, getPdfById, getDataAsPage, deletePdf, testPdf, generatePdfWithData, getPdfByName,
-    getTemplateByExternalKeyAndAddon } = require('../controllers/pdfManage.controller');
+    getTemplateByExternalKeyAndAddon,
+    updateDummyData } = require('../controllers/pdfManage.controller');
 
 // Define routes and link them with corresponding controller methods
 router.post("/resource", authenticateToken, savePdf);         // Save new PDF
 router.put("/resource/:id", authenticateToken, updatePdf);    // Update existing PDF by ID
+router.put("/resource/dummy-data/:id", authenticateToken, updateDummyData);    // Update existing PDF by ID
 router.get("/resource/:id", authenticateToken, getPdfById);            // Get PDF by ID
 router.get("/name/:name", authenticateToken, getPdfByName);            // Get PDF by ID
 router.get("/template/page", authenticateToken, getDataAsPage);            // Get paginated list of PDFs (with sorting and filtering)

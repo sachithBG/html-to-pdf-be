@@ -6,7 +6,7 @@ const savePdf = async (name, headerContent, bodyContent, footerContent, json, ma
     // Insert PDF data into pdf_templates table
     const sql = 'INSERT INTO pdf_templates (name, organization_id, header_content, body_content, footer_content, ' +
         'json, margin, displayHeaderFooter, defVal, external_key) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
-    const params = [name, organization_id, headerContent, bodyContent, footerContent, JSON.stringify(json),
+    const params = [name, organization_id, headerContent, bodyContent, footerContent, JSON.stringify(json, null, 2),
         JSON.stringify(margin), displayHeaderFooter, defVal, external_key];
 
     const [result] = await db.query(sql, params);
@@ -28,7 +28,7 @@ const updatePdf = async (id, name, headerContent, bodyContent, footerContent, js
     // Update PDF template data in pdf_templates table
     const sql = 'UPDATE pdf_templates SET name = ?, organization_id = ?, header_content = ?, body_content = ?, ' +
         'footer_content = ?, json = ?, margin = ?, displayHeaderFooter = ?, defVal = ?, external_key = ? WHERE id = ?';
-    const params = [name, organization_id, headerContent, bodyContent, footerContent, JSON.stringify(json),
+    const params = [name, organization_id, headerContent, bodyContent, footerContent, JSON.stringify(json, null, 2),
         JSON.stringify(margin), displayHeaderFooter, defVal, external_key, id];
 
     const [result] = await db.query(sql, params);
@@ -50,6 +50,14 @@ const updatePdf = async (id, name, headerContent, bodyContent, footerContent, js
     return result.affectedRows > 0;
 };
 
+const updateDummyData = async (id, json) => {
+    // Update PDF template data in pdf_templates table
+    const sql = 'UPDATE pdf_templates SET json = ? WHERE id = ?';
+    const params = [JSON.stringify(json), id];
+    const [result] = await db.query(sql, params);
+    return result.affectedRows > 0;
+}
+
 // Repository method to get a PDF by ID
 const getPdfById = async (id) => {
     // SQL to fetch PDF details and associated addon details
@@ -70,7 +78,7 @@ const getPdfById = async (id) => {
 
     // Convert JSON fields to readable format
     const pdf = results[0];
-    pdf.json = JSON.parse(pdf.json);
+    // pdf.json = JSON.parse(pdf.json);
     // pdf.margin = JSON.parse(pdf.margin);
 
     // Create the addon array with objects { id, name }
@@ -383,5 +391,6 @@ module.exports = {
     getDataAsPage,
     deletePdf,
     existsByExternalKeyAndAddon,
-    getTemplateByExternalKeyAndAddon
+    getTemplateByExternalKeyAndAddon,
+    updateDummyData
 };

@@ -6,7 +6,8 @@ const {
     updateHtmlTable,
     getHtmlTables,
     getHtmlTableById,
-    deleteHtmlTable
+    deleteHtmlTable,
+    getDataAsPage
 } = require('../controllers/dynamicHtmlTable.controller');
 
 // Validation rules (optional, depending on your needs)
@@ -15,6 +16,7 @@ const {
 router.post("/", authenticateToken, createHtmlTable); // Create new HTML table
 router.put("/:id", authenticateToken, updateHtmlTable); // Update HTML table
 router.get("/", authenticateToken, getHtmlTables); // Get all HTML tables
+router.get("/page", authenticateToken, getDataAsPage);
 router.get("/:id", authenticateToken, getHtmlTableById); // Get HTML table by ID
 router.delete("/:id", authenticateToken, deleteHtmlTable); // Delete HTML table
 

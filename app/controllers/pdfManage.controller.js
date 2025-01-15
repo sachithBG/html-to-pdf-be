@@ -75,6 +75,31 @@ const updatePdf = async (req, res) => {
     }
 };
 
+const updateDummyData = async (req, res) => {
+    try {
+        const { id } = req.params;
+        let { json } = req.body;
+        // Basic validation
+        if (!json) {
+            return res.status(400).json({ error: 'data is required.' });
+        }
+        json = JSON.parse(json);
+        // Call service to update PDF
+        const updatedPdf = await pdfService.updateDummyData(id, json);
+
+        res.status(200).json({
+            message: 'PDF updated successfully!',
+            data: updatedPdf,
+        });
+    } catch (error) {
+        console.error('Error updating PDF:', error);
+        res.status(500).json({
+            error: 'An error occurred while updating the PDF.',
+            details: error.message,
+        });
+    }
+};
+
 const getPdfById = async (req, res) => {
     try {
         const { id } = req.params;
@@ -407,5 +432,6 @@ module.exports = {
     generatePdf,
     testPdf,
     generatePdfWithData,
-    getTemplateByExternalKeyAndAddon
+    getTemplateByExternalKeyAndAddon,
+    updateDummyData
 }
