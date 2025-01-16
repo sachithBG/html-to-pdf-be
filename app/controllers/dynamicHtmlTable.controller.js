@@ -25,9 +25,12 @@ const updateHtmlTable = async (req, res) => {
     try {
         const id = req.params.id;
         const tableData = req.body;
+        const updatedFieldPath = tableData.tag?.field_path.includes("._table_")
+            ? tableData.tag.field_path
+            : `${tableData.tag?.field_path}._table_`;
         const tag = await tagService.updateTag(tableData.tag.id, {
-            name: tableData.name + " (Table)", organization_id: tableData.organization_id,
-            field_path: tableData.tag?.field_path + "._table_", tag_type: 'TABLE', addon_ids: tableData.addon_ids
+            name: `${tableData.name} (Table)`, organization_id: tableData.organization_id,
+            field_path: updatedFieldPath, tag_type: 'TABLE', addon_ids: tableData.addon_ids
         });
         tagId = tag.id;
         tableData.tag = tag;

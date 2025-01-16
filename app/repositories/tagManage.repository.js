@@ -63,6 +63,23 @@ const findTags = async (addon_ids) => {
     return rows
 };
 
+const getTagsByAddonAndType = async (addonIds, tagType) => {
+    try {
+        const [rows] = await db.query(
+            `SELECT * 
+             FROM tags 
+             WHERE JSON_CONTAINS(addon_ids, CAST(? AS JSON)) 
+             AND tag_type = ?`,
+            [JSON.stringify(addonIds), tagType]
+        );
+        return rows;
+    } catch (error) {
+        console.error("Error fetching tags by addon and type:", error);
+        throw new Error("Failed to fetch tags.");
+    }
+};
+
+
 const deleteTag = async (id) => {
     await db.query("DELETE FROM tags WHERE id = ?", [id]);
 };
@@ -75,4 +92,5 @@ module.exports = {
     existByKeyAndId,
     findTags,
     deleteTag,
+    getTagsByAddonAndType
 };

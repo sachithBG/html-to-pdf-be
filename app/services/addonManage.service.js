@@ -24,4 +24,9 @@ const deleteAddon = async (id) => {
     return await addonRepository.deleteAddon(id);
 };
 
-module.exports = { createAddon, updateAddon, getAddonById, getAllAddons, deleteAddon, getAllAddonsByOrg };
+// Find addon by name
+const findAddonByName = async (organization_id, name) => {
+    return await addonRepository.findAddonByName(organization_id, name);
+};
+
+module.exports = { createAddon, updateAddon, getAddonById, getAllAddons, deleteAddon, getAllAddonsByOrg, findAddonByName };

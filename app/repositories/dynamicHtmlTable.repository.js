@@ -173,6 +173,22 @@ const getDataAsPage = async (sortOrder, startFrom, to, sortBy, addonsFilter, sea
     }
 };
 
+const getHtmlTablesByTagIds = async (tagIds) => {
+    try {
+        const [rows] = await db.query(
+            `SELECT * 
+             FROM html_tables 
+             WHERE tag_id IN (?)`,
+            [tagIds]
+        );
+        return rows;
+    } catch (error) {
+        console.error("Error fetching HTML tables by tag IDs:", error);
+        throw new Error("Failed to fetch HTML tables.");
+    }
+};
+
+
 
 const deleteHtmlTable = async (id) => {
     await db.query("DELETE FROM html_tables_addons WHERE html_table_id = ?", [id]);
@@ -186,4 +202,5 @@ module.exports = {
     getHtmlTableById,
     getDataAsPage,
     deleteHtmlTable,
+    getHtmlTablesByTagIds
 };

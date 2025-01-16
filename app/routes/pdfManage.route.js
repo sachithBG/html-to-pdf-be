@@ -3,9 +3,11 @@ const router = express.Router();
 const authenticateToken = require("../middleware/auth");
 
 // Import the controller methods
-const { savePdf, updatePdf, getPdfById, getDataAsPage, deletePdf, testPdf, generatePdfWithData, getPdfByName,
+const { savePdf, updatePdf, getPdfById, getDataAsPage, deletePdf, getPdfByName,
     getTemplateByExternalKeyAndAddon,
-    updateDummyData } = require('../controllers/pdfManage.controller');
+    updateDummyData,
+    pdfPreview } = require('../controllers/pdfManage.controller');
+const { generatePdfWithData, testPdf } = require("../controllers/pdfGenerate.controller");
 
 // Define routes and link them with corresponding controller methods
 router.post("/resource", authenticateToken, savePdf);         // Save new PDF
@@ -17,6 +19,7 @@ router.get("/template/page", authenticateToken, getDataAsPage);            // Ge
 router.delete("/resource/:id", authenticateToken, deletePdf);         // Delete a PDF by ID
 
 router.get('/template-by-key-addon', authenticateToken, getTemplateByExternalKeyAndAddon);
+router.get("/preview/:id", authenticateToken, pdfPreview);
 router.post("/convert", authenticateToken, generatePdfWithData);
 
 router.post("/test", testPdf);

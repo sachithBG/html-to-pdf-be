@@ -7,10 +7,10 @@
  * @returns {string} - The HTML string with replaced placeholders.
  */
 const replacePlaceholders = (html, data, defVal) => {
-return html.replace(/{{(.*?)}}/g, (_, key) => {
+    return html.replace(/{{(.*?)}}/g, (_, key) => {
         // Trim extra spaces around the key
         const keys = key.trim().split('.'); // Split the key by dot (.) for nested values
-        
+
         // Traverse the nested keys in the data object
         let value = data;
         for (let k of keys) {
@@ -21,9 +21,37 @@ return html.replace(/{{(.*?)}}/g, (_, key) => {
                 break;
             }
         }
-        
+
         return value || ''; // Return the value or an empty string if no value is found
     });
+};
+
+const replacePlaceholdersTbl = (html, data, defVal) => {
+    return html.replace(/{{(.*?)}}/g, (_, key) => {
+        // Ensure the key matches the "{{any._table_}}" format
+        if (!/^[a-zA-Z0-9]+\.?_table_$/.test(key.trim())) {
+            return `{{${key}}}`; // Keep the placeholder unchanged if it doesn't match
+        }
+        // Trim extra spaces around the key
+        const keys = key.trim().split('.'); // Split the key by dot (.) for nested values
+
+        // Traverse the nested keys in the data object
+        let value = data;
+        for (let k of keys) {
+            if (value && value.hasOwnProperty(k)) {
+                value = value[k];
+            } else {
+                value = defVal; // If the key doesn't exist in the object, set the value to an empty string
+                break;
+            }
+        }
+
+        return value || ''; // Return the value or an empty string if no value is found
+    });
+};
+
+const getNestedValue = (obj, path) => {
+    return path.split('.').reduce((acc, key) => (acc && acc[key] !== undefined ? acc[key] : null), obj);
 };
 
 const imageUrl = 'https://media.istockphoto.com/id/1967543722/photo/the-city-of-london-skyline-at-night-united-kingdom.jpg?s=2048x2048&w=is&k=20&c=ZMquw-lP_vrSVoUlSWjuWIZHdVma7z4ju9pD1EkRPvs='
@@ -52,7 +80,9 @@ const tempData = {
 
 module.exports = {
     replacePlaceholders,
+    replacePlaceholdersTbl,
     imageUrl,
     tempData,
-    tableData
+    tableData,
+    getNestedValue
 }

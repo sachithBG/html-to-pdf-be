@@ -54,4 +54,5 @@ const deleteAddon = async (req, res) => {
     }
 };
 
+
 module.exports = { createAddon, updateAddon, getAddonById, getAllAddons, deleteAddon, getAllAddonsByOrg };

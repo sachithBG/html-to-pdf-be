@@ -19,6 +19,12 @@ const getById = async (id) => {
     return rows[0];  // Return the first result (or undefined if not found)
 };
 
+const getByKeyValue = async (key_value) => {
+    const query = `SELECT * FROM external_keys WHERE key_value = ?`;
+    const [rows] = await db.query(query, [key_value]);
+    return rows[0];  // Return the first result (or undefined if not found)
+};
+
 const getByAddonId = async (addon_id) => {
     const query = `SELECT * FROM external_keys WHERE addon_id = ?`;
     const [rows] = await db.query(query, [addon_id]);
@@ -47,6 +53,7 @@ module.exports = {
     create,
     getAll,
     getById,
+    getByKeyValue,
     update,
     delete_,
     existsByKeyAndAddon,

@@ -39,4 +39,15 @@ const deleteAddon = async (id) => {
     await db.query("DELETE FROM addons WHERE id = ?", [id]);
 };
 
-module.exports = { createAddon, updateAddon, getAddonById, getAllAddons, deleteAddon, getAllAddonsByOrg };
+// Find addon by name
+const findAddonByName = async (organization_id, name) => {
+    try {
+        const [rows] = await db.query("SELECT * FROM addons WHERE organization_id = ? AND name = ?", [Number(organization_id), name]);
+        return rows[0] || null;
+    } catch (error) {
+        console.error("Error in findAddonByName:", error);
+        throw new Error("Failed to fetch addon by name.");
+    }
+};
+
+module.exports = { createAddon, updateAddon, getAddonById, getAllAddons, deleteAddon, getAllAddonsByOrg, findAddonByName };

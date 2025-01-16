@@ -1,9 +1,8 @@
-
-const { convertHtmlToPdf, convertTestPdf, replaceImagesWithBase64 } = require("../services/pdfManage.service");
-const { imageUrl, replacePlaceholders, tempData, tableData } = require("../utils/htmlConfig.util");
-
 const pdfService = require('../services/pdfManage.service');
 const reqManagerService = require("../services/requestManager.service");
+const pdfGenerateService = require("../services/pdfGenerate.service");
+const { getTagsByAddonAndType } = require('../repositories/tagManage.repository');
+const { getHtmlTablesByTagIds } = require('../repositories/dynamicHtmlTable.repository');
 
 const savePdf = async (req, res) => {
     try {
@@ -193,103 +192,6 @@ const deletePdf = async (req, res) => {
     }
 };
 
-const generatePdf = async (req, res) => {
-    let { headerContent, bodyContent, footerContent } = req.body; // Get HTML content from the request body
-
-    if (!bodyContent) {
-        return res.status(400).json({ error: "HTML content is required" });
-    }
-    try {
-        const defVal = '-';
-        margin = { top: "200px", bottom: "150px", left: "20px", right: "20px" };
-        headerContent = replacePlaceholders(headerContent, tempData, defVal);
-        bodyContent = replacePlaceholders(bodyContent, tempData, defVal);
-        footerContent = replacePlaceholders(footerContent, tempData, defVal);
-
-        headerContent = await replaceImagesWithBase64(headerContent);
-        // bodyContent = await replaceImagesWithBase64(bodyContent);
-        footerContent = await replaceImagesWithBase64(footerContent);
-
-        bodyContent = `<html><body><div>${bodyContent}</div></body></html>`;
-
-        console.log("Generating PDF...");
-        const pdfBuffer = await convertHtmlToPdf(headerContent, bodyContent, footerContent, margin, true);
-
-        // Send the generated PDF as a base64 string or as a buffer
-        const base64Pdf = await Buffer.from(pdfBuffer).toString("base64");
-        // console.log(base64Pdf)
-        // res.setHeader("Content-Type", "application/pdf");
-        // res.setHeader("Content-Disposition", "attachment; filename=generated.pdf");
-        res.json({ message: "PDF generated successfully!", pdf: base64Pdf });
-    } catch (error) {
-        console.error("Error generating PDF:", error);
-        res.status(500).json({ error: "Failed to generate PDF" });
-    }
-};
-
-const generatePdfWithData = async (req, res) => {
-    let { headerContent, bodyContent, footerContent, json, defVal, displayHeaderFooter,
-        margin, organization_id, name
-    } = req.body; // Get HTML content from the request body
-
-    if (!bodyContent) {
-        return res.status(400).json({ error: "HTML content is required" });
-    }
-    const userId = req.user.id; // Assuming `req.user` contains authenticated user info
-    // const metadata = req.body; // Extract metadata about the request (e.g., template or parameters)
-    try {
-        // Apply defaults to missing fields
-        json = json || {}; // Set default to empty object if not provided
-        defVal = defVal || '-'; // Default value for defVal if not provided
-        displayHeaderFooter = displayHeaderFooter !== undefined ? displayHeaderFooter : true; // Default true if not provided
-
-        // Default margin if not provided
-        margin = margin || {};
-        margin.top = margin.t ? margin.t + 'px' : "200px"; // Ensure margin.top is set and add 'px'
-        margin.bottom = margin.b ? margin.b + 'px' : "150px"; // Ensure margin.bottom is set and add 'px'
-        margin.left = margin.l ? margin.l + 'px' : "20px"; // Ensure margin.left is set and add 'px'
-        margin.right = margin.r ? margin.r + 'px' : "20px"; // Ensure margin.right is set and add 'px'
-
-        // Build the final margin object with proper units
-        margin = {
-            top: margin.top,
-            bottom: margin.bottom,
-            left: margin.left,
-            right: margin.right,
-        };
-        headerContent = replacePlaceholders(headerContent, json, defVal);
-        bodyContent = replacePlaceholders(bodyContent, json, defVal);
-        footerContent = replacePlaceholders(footerContent, json, defVal);
-
-        headerContent = await replaceImagesWithBase64(headerContent);
-        // bodyContent = await replaceImagesWithBase64(bodyContent);
-        footerContent = await replaceImagesWithBase64(footerContent);
-
-        bodyContent = `<html><body><div>${bodyContent}</div></body></html>`;
-
-        console.log("Generating PDF...");
-        const pdfBuffer = await convertHtmlToPdf(headerContent, bodyContent, footerContent, margin, displayHeaderFooter == 1);
-
-        // Send the generated PDF as a base64 string or as a buffer
-        const base64Pdf = await Buffer.from(pdfBuffer).toString("base64");
-        // console.log(base64Pdf)
-        // res.setHeader("Content-Type", "application/pdf");
-        // res.setHeader("Content-Disposition", "attachment; filename=generated.pdf");
-        res.json({ message: "PDF generated successfully!", pdf: base64Pdf });
-    } catch (error) {
-        console.error("Error generating PDF:", error);
-        res.status(500).json({ error: "Failed to generate PDF" });
-    } finally {
-        try {
-            // Log the request
-            await reqManagerService.logRequest(organization_id, { name, userId });
-        } catch (e) {
-            console.error("Error logging PDF request:", error);
-        }
-
-    }
-}
-
 const getTemplateByExternalKeyAndAddon = async (req, res) => {
     try {
         const { externalKey, addonName } = req.query; // Assuming query parameters are used
@@ -297,7 +199,7 @@ const getTemplateByExternalKeyAndAddon = async (req, res) => {
             return res.status(400).json({ message: 'Missing externalKey or addonName.' });
         }
 
-        const template = await reqManagerService.getTemplateByExternalKeyAndAddon(externalKey, addonName);
+        const template = await pdfService.getTemplateByExternalKeyAndAddon(externalKey, addonName);
         res.status(200).json(template);
     } catch (error) {
         console.error('Error fetching template by external key and addon name:', error);
@@ -305,122 +207,56 @@ const getTemplateByExternalKeyAndAddon = async (req, res) => {
     }
 };
 
-
-const testPdf = async (req, res) => {
+const pdfPreview = async (req, res) => {
+    const { id } = req.params;
+    const { organization_id } = req.query;
     try {
-        console.log("requested");
+        // Fetch template by ID
+        const template = await pdfService.getPdfById(id);
+        if (!template) {
+            return res.status(404).json({ message: "Template not found." });
+        }
+        // Prepare options for PDF generation
+        const options = {
+            json: JSON.parse(template.json || {}),
+            defVal: template.defVal || "-",
+            displayHeaderFooter: template.displayHeaderFooter !== undefined ? template.displayHeaderFooter : true,
+            margin: {
+                t: template.margin?.t || 200,
+                b: template.margin?.b || 150,
+                l: template.margin?.l || 20,
+                r: template.margin?.r || 20,
+            },
+            organization_id: Number(organization_id),
+            name: template.name,
+        };
+        if (template.addons) {
+            const tags = await getTagsByAddonAndType(template.addons.map(a => a.id), 'TABLE');
+            if (!tags || tags.length === 0) {
+                console.error("No tags found for the provided criteria.");
+                // throw new Error("No tags found for the provided criteria.");
+            } else {
+                const htmlTables = await getHtmlTablesByTagIds(tags.map((tag) => tag.id));
+                if (htmlTables) {
+                    options.htmlTables = htmlTables.map(table => {
+                        const tag = tags.find(tag => tag.id === table.tag_id);
+                        return { ...table, tag };
+                    });
+                }
+            }
+        }
+        // Generate PDF
+        const pdfBuffer = await pdfGenerateService.generatePdfWithData(template.headerContent,
+            template.bodyContent, template.footerContent, options, req.user.userId);
 
-        const htmlContent = `
-        <html>
-            <body>
-                <h1 style="font-family: Arial, sans-serif; color: #333;">HTML to PDF Conversion</h1>
-                <p style="font-family: Arial, sans-serif; color: #555;">
-                    This is the main content of the PDF.
-                </p>
-                <p style="font-family: Arial, sans-serif; color: #555;">
-                    The header and footer are consistent on every page, including images.
-                </p>
-                <img src="${imageUrl}" style="height: 300px; margin-bottom: 20px;" />
-
-                <!-- First Table Title -->
-                <h2 style="font-family: 'Georgia', serif; font-weight: bold; font-size: 18px; margin-bottom: 10px;">
-                    First Table: Sample Data
-                </h2>
-
-                <!-- First Table -->
-                <table style="width: 100%; border-collapse: collapse; font-family: Arial, sans-serif; margin-bottom: 20px;">
-                    <thead>
-                        <tr style="background-color: #4CAF50; color: white; padding: 10px;">
-                            <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Header 1</th>
-                            <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Header 2</th>
-                            <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Header 3</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr style="background-color: #f2f2f2;">
-                            <td style="padding: 8px; border: 1px solid #ddd;">Row 1, Column 1</td>
-                            <td style="padding: 8px; border: 1px solid #ddd;">Row 1, Column 2</td>
-                            <td style="padding: 8px; border: 1px solid #ddd;">Row 1, Column 3</td>
-                        </tr>
-                        <tr>
-                            <td style="padding: 8px; border: 1px solid #ddd;">Row 2, Column 1</td>
-                            <td style="padding: 8px; border: 1px solid #ddd;">Row 2, Column 2</td>
-                            <td style="padding: 8px; border: 1px solid #ddd;">Row 2, Column 3</td>
-                        </tr>
-                    </tbody>
-                </table>
-
-                <!-- Second Table Title -->
-                <h2 style="font-family: 'Georgia', serif; font-weight: bold; font-size: 18px; margin-bottom: 10px;">
-                    Second Table: 50 Rows of Data
-                </h2>
-
-                <!-- Second Table with 50 Rows -->
-                <table style="width: 100%; border-collapse: collapse; font-family: Arial, sans-serif; page-break-before: always;">
-                    <thead>
-                        <tr style="background-color: #4CAF50; color: white; padding: 10px;">
-                            <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Row Number</th>
-                            <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Description</th>
-                            <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Details</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${Array.from({ length: 50 })
-                .map((_, i) => `
-                                <tr style="${i % 2 === 0 ? 'background-color: #f2f2f2;' : ''}">
-                                    <td style="padding: 8px; border: 1px solid #ddd;">Row ${i + 1}</td>
-                                    <td style="padding: 8px; border: 1px solid #ddd;">Description for Row ${i + 1}</td>
-                                    <td style="padding: 8px; border: 1px solid #ddd;">Details for Row ${i + 1}</td>
-                                </tr>
-                            `)
-                .join('')}
-                    </tbody>
-                </table>
-            </body>
-        </html>
-    `
-        // Generate PDF with header and footer
-        const data = await convertTestPdf(htmlContent);
-        res.json({ pdf: await Buffer.from(data).toString("base64") });
-
-    } catch (e) {
-        res.status(500).json({
-            version: "v1",
-            message: e,
-        });
-        console.log(e);
+        // res.setHeader("Content-Type", "application/pdf");
+        // res.setHeader("Content-Disposition", `attachment; filename=${template.name}.pdf`);
+        res.json({ pdf: pdfBuffer });
+    } catch (error) {
+        console.error("Error in convertById:", error);
+        res.status(500).json({ message: "Failed to generate PDF." });
     }
 }
-
-function generateTableBody(tableData) {
-    return tableData.map(row => {
-        return `
-      <tr>
-        <td style="border: 1px solid #ddd; padding: 8px;">${row.metric}</td>
-        <td style="border: 1px solid #ddd; padding: 8px;">${row.target}</td>
-        <td style="border: 1px solid #ddd; padding: 8px;">${row.achieved}</td>
-      </tr>
-    `;
-    }).join('');
-}
-
-const tableTemplate = `
-    <table style="width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px;">
-      <thead>
-        <tr style="background-color: #f4f4f4;">
-          <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Metric</th>
-          <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Target</th>
-          <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Achieved</th>
-        </tr>
-      </thead>
-      <tbody>
-        <!-- Table body will be dynamically inserted here -->
-      </tbody>
-    </table>
-  `;
-
-const generatedTableBody = generateTableBody(tableData);
-const updatedTable = tableTemplate.replace('<tbody><!-- Table body will be dynamically inserted here --></tbody>', `<tbody>${generatedTableBody}</tbody>`);
 
 module.exports = {
     savePdf,
@@ -429,9 +265,7 @@ module.exports = {
     getPdfByName,
     getDataAsPage,
     deletePdf,
-    generatePdf,
-    testPdf,
-    generatePdfWithData,
     getTemplateByExternalKeyAndAddon,
-    updateDummyData
+    updateDummyData,
+    pdfPreview
 }

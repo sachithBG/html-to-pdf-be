@@ -5,7 +5,7 @@ const savePdf = async (name, headerContent, bodyContent, footerContent, json, ma
     defVal = "-", organization_id, addon_ids, external_key) => {
     // Insert PDF data into pdf_templates table
     const sql = 'INSERT INTO pdf_templates (name, organization_id, header_content, body_content, footer_content, ' +
-        'json, margin, displayHeaderFooter, defVal, external_key) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
+        'margin, displayHeaderFooter, defVal, external_key) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)';
     const params = [name, organization_id, headerContent, bodyContent, footerContent, JSON.stringify(json, null, 2),
         JSON.stringify(margin), displayHeaderFooter, defVal, external_key];
 
@@ -27,8 +27,8 @@ const updatePdf = async (id, name, headerContent, bodyContent, footerContent, js
     defVal = "-", organization_id, addon_ids, external_key) => {
     // Update PDF template data in pdf_templates table
     const sql = 'UPDATE pdf_templates SET name = ?, organization_id = ?, header_content = ?, body_content = ?, ' +
-        'footer_content = ?, json = ?, margin = ?, displayHeaderFooter = ?, defVal = ?, external_key = ? WHERE id = ?';
-    const params = [name, organization_id, headerContent, bodyContent, footerContent, JSON.stringify(json, null, 2),
+        'footer_content = ?, margin = ?, displayHeaderFooter = ?, defVal = ?, external_key = ? WHERE id = ?';
+    const params = [name, organization_id, headerContent, bodyContent, footerContent,
         JSON.stringify(margin), displayHeaderFooter, defVal, external_key, id];
 
     const [result] = await db.query(sql, params);
@@ -381,6 +381,37 @@ const deletePdf = async (id) => {
     return result.affectedRows > 0; // Return true if deletion was successful
 };
 
+// Fetch template by ID
+const fetchTemplateById = async (id) => {
+    try {
+        const [rows] = await db.query("SELECT * FROM pdf_templates WHERE id = ?", [id]);
+        return rows[0] || null;
+    } catch (error) {
+        console.error("Error in fetchTemplateById:", error);
+        throw new Error("Failed to fetch template by ID.");
+    }
+};
+
+// Fetch template by Addon ID and type/status
+const fetchTemplateByAddon = async (addonId, typeStatus) => {
+    try {
+        const [rows] = await db.query(
+            `
+            SELECT pt.* 
+            FROM pdf_templates AS pt
+            INNER JOIN pdf_template_addons AS pta ON pt.id = pta.pdf_template_id
+            WHERE pta.addon_id = ? AND pt.external_key = ?
+            `,
+            [addonId, typeStatus]
+        );
+        return rows[0] || null;
+    } catch (error) {
+        console.error("Error in fetchTemplateByAddon:", error);
+        throw new Error("Failed to fetch template by addon ID and type/status.");
+    }
+};
+
+
 module.exports = {
     savePdf,
     updatePdf,
@@ -392,5 +423,7 @@ module.exports = {
     deletePdf,
     existsByExternalKeyAndAddon,
     getTemplateByExternalKeyAndAddon,
-    updateDummyData
+    updateDummyData,
+    fetchTemplateById,
+    fetchTemplateByAddon,
 };
