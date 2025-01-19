@@ -10,6 +10,7 @@ var corsOptions = {
   origin: '*',//["http://localhost:3000", "https://html-to-pdf-fe-b4lt-podsdqd9q-sachiths-projects-785dc9ca.vercel.app"],
   optionsSuccessStatus: 200, // For legacy browser support,
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
 };
 
 app.use(logger("dev"));
