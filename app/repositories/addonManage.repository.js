@@ -1,9 +1,9 @@
 const db = require("../config/db");
 
-const createAddon = async (userId, { name }) => {
+const createAddon = async (userId, { name, organization_id }) => {
     const [result] = await db.query(
-        "INSERT INTO addons (organization_id, name) VALUES ((SELECT id FROM organizations WHERE user_id = ? LIMIT 1), ?)",
-        [userId, name]
+        "INSERT INTO addons (organization_id, name) VALUES ((SELECT id FROM organizations WHERE user_id = ? AND id = ?), ?)",
+        [userId, organization_id, name]
     );
     return { id: result.insertId, name };
 };

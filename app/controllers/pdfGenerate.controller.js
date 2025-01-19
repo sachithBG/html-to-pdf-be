@@ -6,7 +6,7 @@ const { getExternalKeyByKeyValue } = require("../services/externalKey.service");
 // Generate PDF by template ID
 const convertById = async (req, res) => {
     const { id } = req.params;
-    const { jsonData } = req.body;
+    const { jsonData, subcategoriesFilter, allowAllSections } = req.body;
 
     try {
         // Fetch template by ID
@@ -29,8 +29,8 @@ const convertById = async (req, res) => {
             name: template.name,
         };
         // Generate PDF
-        const pdfBuffer = await pdfGenerateService.generatePdfWithData(template.header_content,
-            template.body_content, template.footer_content, options, req.user.userId);
+        const pdfBuffer = await pdfGenerateService.generatePdfWithDataV1(template.header_content,
+            template.body_content, template.footer_content, options, req.user.userId, subcategoriesFilter, allowAllSections);
 
         // res.setHeader("Content-Type", "application/pdf");
         // res.setHeader("Content-Disposition", `attachment; filename=${template.name}.pdf`);
@@ -43,7 +43,7 @@ const convertById = async (req, res) => {
 
 // Generate PDF by Addon ID and type/status
 const convertByAddon = async (req, res) => {
-    const { addonName, typeStatus, jsonData } = req.body;
+    const { addonName, typeStatus, subcategoriesFilter, jsonData, allowAllSections } = req.body;
 
     try {
         // Find addon by name
@@ -77,8 +77,8 @@ const convertByAddon = async (req, res) => {
             name: template.name,
         };
         // Generate PDF
-        const pdfBuffer = await pdfGenerateService.generatePdfWithData(template.header_content,
-            template.body_content, template.footer_content, options, req.user.userId);
+        const pdfBuffer = await pdfGenerateService.generatePdfWithDataV1(template.header_content,
+            template.body_content, template.footer_content, options, req.user.userId, subcategoriesFilter, allowAllSections);
 
         // res.setHeader("Content-Type", "application/pdf");
         // res.setHeader("Content-Disposition", `attachment; filename=${template.name}.pdf`);

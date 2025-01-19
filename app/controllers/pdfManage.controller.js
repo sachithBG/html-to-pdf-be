@@ -6,7 +6,8 @@ const { getHtmlTablesByTagIds } = require('../repositories/dynamicHtmlTable.repo
 
 const savePdf = async (req, res) => {
     try {
-        const { name, headerContent, bodyContent, footerContent, json, margin, displayHeaderFooter, defVal, organization_id, addon_ids, external_key } = req.body;
+        const { name, headerContent, bodyContent, footerContent, json, margin, displayHeaderFooter, defVal,
+            organization_id, addon_ids, external_key, sections, subcategories } = req.body;
 
         // Basic validation
         if (!name) {
@@ -22,8 +23,8 @@ const savePdf = async (req, res) => {
             return res.status(400).json({ error: 'Type/Status is required.' });
         }
         // Call service to save PDF
-        const pdf = await pdfService.savePdf(name, headerContent, bodyContent, footerContent, json, margin, displayHeaderFooter, defVal,
-            organization_id, addon_ids, external_key);
+        const pdf = await pdfService.savePdf(name, headerContent, bodyContent, footerContent, json, margin,
+            displayHeaderFooter, defVal, organization_id, addon_ids, external_key, sections, subcategories);
 
         res.status(201).json({
             message: 'PDF saved successfully!',
@@ -42,7 +43,7 @@ const updatePdf = async (req, res) => {
     try {
         const { id } = req.params;
         const { name, headerContent, bodyContent, footerContent, json, margin, displayHeaderFooter, defVal, organization_id,
-            addon_ids, external_key } = req.body;
+            addon_ids, external_key, sections, subcategories } = req.body;
 
         // Basic validation
         if (!name) {
@@ -59,7 +60,7 @@ const updatePdf = async (req, res) => {
         }
         // Call service to update PDF
         const updatedPdf = await pdfService.updatePdf(id, name, headerContent, bodyContent, footerContent, json,
-            margin, displayHeaderFooter, defVal, organization_id, addon_ids, external_key);
+            margin, displayHeaderFooter, defVal, organization_id, addon_ids, external_key, sections, subcategories);
 
         res.status(200).json({
             message: 'PDF updated successfully!',
@@ -209,7 +210,7 @@ const getTemplateByExternalKeyAndAddon = async (req, res) => {
 
 const pdfPreview = async (req, res) => {
     const { id } = req.params;
-    const { organization_id } = req.query;
+    const { organization_id, subcategoriesFilter } = req.query;
     try {
         // Fetch template by ID
         const template = await pdfService.getPdfById(id);
@@ -246,8 +247,8 @@ const pdfPreview = async (req, res) => {
             }
         }
         // Generate PDF
-        const pdfBuffer = await pdfGenerateService.generatePdfWithData(template.headerContent,
-            template.bodyContent, template.footerContent, options, req.user.userId);
+        const pdfBuffer = await pdfGenerateService.generatePdfWithDataV1(template.headerContent,
+            template.bodyContent, template.sections, template.footerContent, options, req.user.userId, subcategoriesFilter, false);
 
         // res.setHeader("Content-Type", "application/pdf");
         // res.setHeader("Content-Disposition", `attachment; filename=${template.name}.pdf`);

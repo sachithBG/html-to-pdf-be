@@ -26,6 +26,8 @@ router.get('/:userId', authenticateToken, organizationController.getOrganization
 // Route for getting an organization by ID
 router.get('/organization/:id', authenticateToken, organizationController.getOrganizationById);
 
+//Route for updating an organization logo
+
 // Route for updating an organization
 router.put('/:id', authenticateToken, updateOrganizationValidation, organizationController.updateOrganization);
 

@@ -1,7 +1,7 @@
 const s3Repository = require("../repositories/s3.repository");
 
-const uploadImage = async (file) => {
-    return await s3Repository.uploadFile(file);
+const uploadImage = async (path, file) => {
+    return await s3Repository.uploadImage(path, file);
 };
 
 const deleteImage = async (fileKey) => {

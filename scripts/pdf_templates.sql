@@ -10,6 +10,8 @@ CREATE TABLE pdf_templates (
     displayHeaderFooter BOOLEAN DEFAULT true,
     defVal VARCHAR(255) DEFAULT '-',
     external_key VARCHAR(255) NOT NULL,
+    sections JSON DEFAULT NULL, 
+    subcategories JSON DEFAULT NULL, 
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     modified_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (organization_id) REFERENCES organizations(id)
@@ -25,3 +27,5 @@ CREATE TABLE `pdf_template_addons` (
 
 -- ALTER TABLE pdf_templates 
 -- ADD COLUMN external_key VARCHAR(255) NOT NULL;
+-- ALTER TABLE pdf_templates ADD COLUMN sections JSON DEFAULT NULL;
+-- ALTER TABLE pdf_templates ADD COLUMN subcategories JSON DEFAULT NULL;

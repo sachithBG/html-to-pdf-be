@@ -1,14 +1,14 @@
 const db = require('../config/db'); // Import the centralized DB connection
 
 // Repository method to save PDF data
-const savePdf = async (name, headerContent, bodyContent, footerContent, json, margin, displayHeaderFooter = true,
-    defVal = "-", organization_id, addon_ids, external_key) => {
+const savePdf = async (name, headerContent, bodyContent, footerContent, json={}, margin, displayHeaderFooter = true,
+    defVal = "-", organization_id, addon_ids, external_key, sections, subcategories) => {
     // Insert PDF data into pdf_templates table
-    const sql = 'INSERT INTO pdf_templates (name, organization_id, header_content, body_content, footer_content, ' +
-        'margin, displayHeaderFooter, defVal, external_key) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)';
+    const sql = 'INSERT INTO pdf_templates (name, organization_id, header_content, body_content, footer_content, json, ' +
+        'margin, displayHeaderFooter, defVal, external_key, sections, subcategories) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
     const params = [name, organization_id, headerContent, bodyContent, footerContent, JSON.stringify(json, null, 2),
-        JSON.stringify(margin), displayHeaderFooter, defVal, external_key];
-
+        JSON.stringify(margin), displayHeaderFooter, defVal, external_key, JSON.stringify(sections), JSON.stringify(subcategories)];
+    //JSON.stringify(json, null, 2)
     const [result] = await db.query(sql, params);
     const pdfTemplateId = result.insertId;
 
@@ -24,12 +24,13 @@ const savePdf = async (name, headerContent, bodyContent, footerContent, json, ma
 
 // Repository method to update a PDF
 const updatePdf = async (id, name, headerContent, bodyContent, footerContent, json, margin, displayHeaderFooter = true,
-    defVal = "-", organization_id, addon_ids, external_key) => {
+    defVal = "-", organization_id, addon_ids, external_key, sections, subcategories) => {
     // Update PDF template data in pdf_templates table
     const sql = 'UPDATE pdf_templates SET name = ?, organization_id = ?, header_content = ?, body_content = ?, ' +
-        'footer_content = ?, margin = ?, displayHeaderFooter = ?, defVal = ?, external_key = ? WHERE id = ?';
+        'footer_content = ?, margin = ?, displayHeaderFooter = ?, defVal = ?, external_key = ? , sections = ?, subcategories = ? WHERE id = ?';
     const params = [name, organization_id, headerContent, bodyContent, footerContent,
-        JSON.stringify(margin), displayHeaderFooter, defVal, external_key, id];
+        JSON.stringify(margin), displayHeaderFooter, defVal, external_key,
+        JSON.stringify(sections), JSON.stringify(subcategories), id];
 
     const [result] = await db.query(sql, params);
 

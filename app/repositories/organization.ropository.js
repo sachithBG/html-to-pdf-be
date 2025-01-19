@@ -42,6 +42,11 @@ const updateOrganization = async (id, name, is_default, logo) => {
     await db.query(query, [name, is_default, logo, id]);
 };
 
+const updateOrganizationV2 = async (id, name, logo) => {
+    const query = 'UPDATE organizations SET name = ?, logo = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?';
+    await db.query(query, [name, logo, id]);
+};
+
 // Update organization to default
 const updateOrganizationToDefault = async (id) => {
     const query = 'UPDATE organizations SET is_default = 0 WHERE id != ?';
@@ -63,5 +68,6 @@ module.exports = {
     getOrganizationByUserAndName,
     updateOrganization,
     updateOrganizationToDefault,
-    deleteOrganization
+    deleteOrganization,
+    updateOrganizationV2
 };

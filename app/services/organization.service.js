@@ -33,6 +33,14 @@ const updateOrganization = async (id, name, is_default, logo) => {
     return await organizationRepository.updateOrganization(id, name, is_default, logo);
 };
 
+const updateOrganizationV2 = async (id, name, logo) => {
+    const existingOrganization = await organizationRepository.getOrganizationById(id);
+    if (!existingOrganization) {
+        throw new Error('Organization not found.');
+    }
+    return await organizationRepository.updateOrganizationV2(id, name, logo);
+};
+
 // Update organization to default
 const updateOrganizationToDefault = async (id) => {
     const existingOrganization = await organizationRepository.getOrganizationById(id);
@@ -66,5 +74,6 @@ module.exports = {
     getOrganizationById,
     updateOrganization,
     updateOrganizationToDefault,
-    deleteOrganization
+    deleteOrganization,
+    updateOrganizationV2
 };

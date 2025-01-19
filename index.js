@@ -36,6 +36,7 @@ app.use("/api/v2/pdf", require("./app/routes/pdfGenerate.route"));
 app.use("/api/v1/logs", require("./app/routes/requestManager.route"));
 
 app.use('/api/v1/tokens', require("./app/routes/token.routes"));
+app.use('/api/v1/media', require("./app/routes/mediaLocale.route"));
 app.use("/api/v1/s3", require("./app/routes/s3.route"));
 
 

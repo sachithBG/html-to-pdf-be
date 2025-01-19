@@ -3,11 +3,17 @@ const path = require("path");
 const puppeteer = require('puppeteer');
 const https = require('https');
 const { v4: uuidv4 } = require('uuid');
+const { decode } = require('entities');
 
-const { replacePlaceholders, tempData, tableData, getNestedValue } = require("../utils/htmlConfig.util");
+const { replacePlaceholders, tempData, tableData, getNestedValue, setStyles } = require("../utils/htmlConfig.util");
 const reqManagerService = require("../services/requestManager.service");
 
 const { imageUrl } = require("../utils/htmlConfig.util");
+
+const ckeditorStyles = fs.readFileSync(
+    path.resolve(__dirname, '../css/ckeditor5.css'),
+    'utf8'
+);
 
 const generatePdf = async (headerContent, bodyContent, footerContent) => {
     const defaultValues = { defVal: "-" };
@@ -30,6 +36,18 @@ const generatePdf = async (headerContent, bodyContent, footerContent) => {
         throw new Error("Error in generatePdf: " + error.message);
     }
 };
+
+const generatePdfWithDataV1 = async (headerContent, bodyContent, sections = [], footerContent, options, userId,
+    subcategoriesFilter = [], allowAllSections = true) => {
+    let newBodyContent = bodyContent;
+    for (sec of sections) {
+        const { htmlContent, subcategories } = sec;
+        if (subcategoriesFilter.some((filter) => subcategories.includes(filter)) || allowAllSections) {
+            newBodyContent += htmlContent;
+        }
+    }
+    return await generatePdfWithData(headerContent, newBodyContent, footerContent, options, userId);
+}
 
 const generatePdfWithData = async (headerContent, bodyContent, footerContent, options, userId) => {
     const {
@@ -62,9 +80,16 @@ const generatePdfWithData = async (headerContent, bodyContent, footerContent, op
         bodyContent = replacePlaceholders(bodyContent, json, defVal);
         footerContent = replacePlaceholders(footerContent, json, defVal);
 
-        headerContent = await replaceImagesWithBase64(headerContent);
-        // bodyContent = await replaceImagesWithBase64(bodyContent);
-        footerContent = await replaceImagesWithBase64(footerContent);
+                bodyContent = setStyles(bodyContent, ckeditorStyles);
+        // headerContent = setStyles(headerContent, ckeditorStyles);
+        // headerContent = `<div class="ck ck-content">
+        //                 ${headerContent} 
+        //             </div>`;
+        
+
+        headerContent = await replaceImagesWithBase64(decodeHTMLEntities(headerContent));
+        bodyContent = await replaceImagesWithBase64(decodeHTMLEntities(bodyContent));
+        footerContent = await replaceImagesWithBase64(decodeHTMLEntities(footerContent));
 
         bodyContent = `<html><body><div>${bodyContent}</div></body></html>`;
         const pdfBuffer = await convertHtmlToPdf(headerContent, bodyContent, footerContent, defaultMargin, displayHeaderFooter);
@@ -176,12 +201,15 @@ const convertHtmlToPdf = async (headerWithBase64, bodyContent, footerWithBase64,
 
         // Set the HTML content provided in the request
         await page.setContent(bodyContent, { waitUntil: 'domcontentloaded' });
-        await page.waitForSelector('table'); // Ensure the table is loaded
+        if (bodyContent.includes('<table'))await page.waitForSelector('table'); // Ensure the table is loaded
+        await page.waitForSelector('img'); // Ensure the table is loaded
+
+        await page.addStyleTag({ path: './app/css/ckeditor5.css' });
+        // await page.addStyleTag({ url: 'https://cdn.ckeditor.com/ckeditor5/44.1.0/ckeditor5.css' });
         // await page.emulateMediaType('screen');
         // console.log(process.env.PDF_PATH)
         // Generate PDF with header and footer
         const pdfBuffer = await page.pdf({
-
             path: outputPath, // Path to save the PDF file path.resolve(outputPath)
             format: "A4",
             displayHeaderFooter: Boolean(displayHeaderFooter),
@@ -199,18 +227,43 @@ const convertHtmlToPdf = async (headerWithBase64, bodyContent, footerWithBase64,
         await browser.close();
         // Read the PDF file into a buffer
         // const pdfBuffer = fs.readFileSync(outputPath);
-
-        // Remove the temporary PDF file after reading it
         fs.unlinkSync(outputPath);
         return pdfBuffer;
     } catch (error) {
         throw new Error("Failed to convert HTML to PDF: " + error.message);
+    } finally {
+        // Remove the temporary PDF file after reading it
+        
     }
 };
 
 const replaceImagesWithBase64 = async (htmlContent) => {
     // Regular expression to find img tags and their src attributes
     const imgRegex = /<img\s+[^>]*src=["']([^"']+)["'][^>]*>/g;
+    // const imageRegex = /<figure class="image[^>]*>.*?<img[^>]*src="([^">]+)"[^>]*>.*?<\/figure>/g;
+
+    // htmlContent = decodeHTMLEntities(htmlContent)
+    // htmlContent = htmlContent.replace(/&amp;/g, '&');
+    // while ((match = imageRegex.exec(htmlContent)) !== null) {
+    //     const imageUrl = match[1];
+    //     try {
+    //         const response = await fetch(imageUrl);
+    //         const buffer = await response.buffer();
+    //         const mimeType = response.headers.get('content-type');
+    //         const base64Image = `data:${mimeType};base64,${buffer.toString('base64')}`;
+
+    //         // Convert <figure> to <div> and replace <img> source with base64
+    //         htmlContent = htmlContent.replace(
+    //             match[0],
+    //             `<div class="image-container" style="text-align: center;">
+    //                 <img src="${base64Image}" style="max-width: 100%; height: auto; display: block; margin: 0 auto;">
+    //             </div>`
+    //         );
+    //     } catch (error) {
+    //         console.error(`Failed to fetch image: ${imageUrl}`, error);
+    //     }
+    // }
+
 
     // Find all the image URLs
     const imageUrls = [...htmlContent.matchAll(imgRegex)];
@@ -228,6 +281,7 @@ const replaceImagesWithBase64 = async (htmlContent) => {
     return htmlContent;
 };
 
+const decodeHTMLEntities = (html) => decode(html);
 
 const convertToBase64 = (url) => {
     return new Promise((resolve, reject) => {
@@ -378,6 +432,7 @@ const updatedTable = tableTemplate.replace('<tbody><!-- Table body will be dynam
 module.exports = {
     generatePdf,
     generatePdfWithData,
+    generatePdfWithDataV1,
     testPdf,
     convertHtmlToPdf,
     replaceImagesWithBase64,

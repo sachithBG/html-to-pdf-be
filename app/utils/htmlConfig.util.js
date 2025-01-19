@@ -75,7 +75,35 @@ const tempData = {
     tableData
 }
 
-
+const setStyles = (content, ckeditorStyles) => {
+    return `
+            <!DOCTYPE html>
+            <html>
+                <head>
+                <link rel="stylesheet" href="https://cdn.ckeditor.com/ckeditor5/44.1.0/ckeditor5.css">
+                    <style>
+                        ${ckeditorStyles} /* CKEditor styles */
+                        body {
+                            font-family: Arial, sans-serif;
+                            margin: 0;
+                            padding: 0;
+                        },
+                        .ck-content {
+                        max-width: 800px;
+                        margin: 0 auto;
+                    }
+                    </style>
+                </head>
+                <body>
+                <div style="width: 800px;">
+                    <div class="ck ck-content">
+                        ${content} 
+                    </div>
+                    </div>
+                </body>
+            </html>
+        `
+}
 
 
 module.exports = {
@@ -84,5 +112,6 @@ module.exports = {
     imageUrl,
     tempData,
     tableData,
-    getNestedValue
+    getNestedValue,
+    setStyles
 }

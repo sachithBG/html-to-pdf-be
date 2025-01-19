@@ -3,7 +3,7 @@ const { PdfTemplate } = require("./vm/pdfTemplate");
 
 // Service method to save PDF
 const savePdf = async (name, headerContent, bodyContent, footerContent, json, margin,
-    displayHeaderFooter = true, defVal = "-", organization_id, addon_ids, external_key) => {
+    displayHeaderFooter = true, defVal = "-", organization_id, addon_ids, external_key, sections, subcategories) => {
     try {
         // Check if PDF with the same name already exists
         const existingPdf = await pdfRepository.existsByName(name);
@@ -19,7 +19,7 @@ const savePdf = async (name, headerContent, bodyContent, footerContent, json, ma
 
         // Call repository method to save PDF
         const pdfId = await pdfRepository.savePdf(name, headerContent, bodyContent, footerContent,
-            json, margin, displayHeaderFooter, defVal, organization_id, addon_ids, external_key);
+            json, margin, displayHeaderFooter, defVal, organization_id, addon_ids, external_key, sections, subcategories);
 
         return {
             id: pdfId,
@@ -40,7 +40,7 @@ const savePdf = async (name, headerContent, bodyContent, footerContent, json, ma
 
 // Service method to update PDF
 const updatePdf = async (id, name, headerContent, bodyContent, footerContent, json, margin,
-    displayHeaderFooter = true, defVal = "-", organization_id, addon_ids, external_key) => {
+    displayHeaderFooter = true, defVal = "-", organization_id, addon_ids, external_key, sections, subcategories) => {
     try {
         // Check if PDF with the same name already exists, but not the current one being updated
         const existingPdf = await pdfRepository.existsByNameIdNot(name, id);
@@ -50,7 +50,7 @@ const updatePdf = async (id, name, headerContent, bodyContent, footerContent, js
 
         // Call repository method to update PDF
         const updated = await pdfRepository.updatePdf(id, name, headerContent, bodyContent, footerContent, json,
-            margin, displayHeaderFooter, defVal, organization_id, addon_ids, external_key);
+            margin, displayHeaderFooter, defVal, organization_id, addon_ids, external_key, sections, subcategories);
         if (!updated) {
             throw new Error('PDF not found or failed to update.');
         }

@@ -1,4 +1,5 @@
 const profileRepository = require('../repositories/profile.repository');
+const s3Service = require("../services/s3.service");
 
 // Create profile
 const createProfile = async (userId, theme, avatar) => {
@@ -29,9 +30,10 @@ const updateProfileTheme = async (userId, theme) => {
 
 // Update profile avatar
 const updateProfileAvatar = async (userId, avatar) => {
-    const result = await profileRepository.updateProfileAvatar(userId, avatar);
+    avatar = await s3Service.uploadImage('profile', avatar);
+    const result = await profileRepository.updateProfileAvatar(Number(userId), avatar?.fileUrl, avatar?.fileKey);
     if (result === 0) throw new Error('Profile not found or avatar not updated');
-    return true;
+    return avatar?.fileUrl;
 };
 
 // Delete profile

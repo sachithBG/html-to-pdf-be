@@ -73,11 +73,14 @@ const updateProfileTheme = async (req, res) => {
 // Update profile avatar
 const updateProfileAvatar = async (req, res) => {
     const { userId } = req.params;
-    const { avatar } = req.body;
+    const avatar = req.file; // Assuming the avatar image is uploaded as a file
 
+    if (!avatar) {
+        return res.status(400).json({ error: 'No avatar image provided' });
+    }
     try {
-        await profileService.updateProfileAvatar(userId, avatar);
-        res.status(200).json({ message: 'Profile avatar updated successfully' });
+        const url = await profileService.updateProfileAvatar(userId || req.user.id, avatar);
+        res.status(200).json({ message: 'Profile avatar updated successfully', url: url });
     } catch (error) {
         res.status(400).json({ error: error.message });
     }

@@ -31,7 +31,7 @@ const updateProfileTheme = async (userId, theme) => {
 }
 
 // Update profile avatar
-const updateProfileAvatar = async (userId, avatar) => {
+const updateProfileAvatar = async (userId, avatar, key) => {
     const result = await db.query("UPDATE profiles SET avatar = ? WHERE user_id = ?", [avatar, userId]);
     return result.affectedRows;
 }

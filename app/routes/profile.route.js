@@ -2,6 +2,8 @@ const express = require('express');
 const profileController = require('../controllers/profile.controller');
 const authenticateToken = require("../middleware/auth");
 const { body } = require('express-validator');
+const multer = require('multer');
+const upload = multer();
 
 const profileValidation = [
     body('theme').isIn(['light', 'dark']).withMessage('Theme must be "light" or "dark"').optional(),
@@ -26,7 +28,7 @@ router.put('/:userId/name', authenticateToken, profileController.updateUserName)
 router.put('/:userId/theme', authenticateToken, profileController.updateProfileTheme);
 
 // Route for updating a user's avatar
-router.put('/:userId/avatar', authenticateToken, profileController.updateProfileAvatar);
+router.put('/:userId/avatar', authenticateToken, upload.single('avatar') , profileController.updateProfileAvatar);
 
 // Route for deleting a profile
 router.delete('/:userId', authenticateToken, profileController.deleteProfile);
