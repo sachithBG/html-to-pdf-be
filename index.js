@@ -7,7 +7,7 @@ const PORT = 4000;
 require("dotenv").config({ path: ".env" });
 const app = express();
 var corsOptions = {
-  origin: ['http://localhost:3000', 'https://html-to-pdf-fe-3i37.vercel.app'],
+  origin: ['http://localhost:3000'],
   optionsSuccessStatus: 200,
   credentials: true,
 };

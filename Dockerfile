@@ -37,8 +37,15 @@ RUN npm install
 # Copy the rest of the application code
 COPY . .
 
+# Copy database script
+COPY ./scripts/all.sql /docker-entrypoint-initdb.d/all.sql
+
 # Expose the port the app runs on
-EXPOSE 3000
+EXPOSE 4000
+
+# Set environment variables
+ENV NODE_ENV=production
+ENV PORT=4000
 
 # Define the command to run the app
 CMD ["npm", "start"]

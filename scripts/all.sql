@@ -1,3 +1,7 @@
+CREATE DATABASE IF NOT EXISTS pdf_management_system;
+
+USE pdf_management_system;
+
 CREATE TABLE users (
     id INT AUTO_INCREMENT PRIMARY KEY,                -- Unique identifier for each user
     name VARCHAR(255) NOT NULL,                        -- Name of the user
