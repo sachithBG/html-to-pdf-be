@@ -6,10 +6,7 @@ const logger = require("morgan");
 const PORT = 4000;
 require("dotenv").config({ path: ".env" });
 
-const allowedOrigins = [
-  'https://html-to-pdf-fe-3i37.vercel.app',
-  'http://localhost:3000'
-];
+const allowedOrigin = 'https://html-to-pdf-fe-3i37.vercel.app';//process.env.ALLOWED_ORIGIN || 'http://localhost:3000';
 
 const app = express();
 // var corsOptions = {
@@ -18,21 +15,19 @@ const app = express();
 //   credentials: true,
 // };
 
-app.use((req, res, next) => {
-  const origin = req.headers.origin;
-  if (allowedOrigins.includes(origin)) {
-    res.setHeader('Access-Control-Allow-Origin', origin);
-  }
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-  if (req.method === 'OPTIONS') {
-    return res.sendStatus(200); // Handle preflight request
-  }
-  next();
-});
+const corsOptions = {
+  origin: (origin, callback) => {
+    if (origin === allowedOrigin || !origin) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+  credentials: true, // Allow credentials like cookies
+};
 
-// app.use(cors(corsOptions));
+app.use(cors(corsOptions));
 app.use(logger("dev"));
 app.use(bodyParser.json({ type: 'application/*+json' }))
 
