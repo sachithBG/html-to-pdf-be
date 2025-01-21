@@ -1,23 +1,28 @@
 const express = require("express");
-const cors = require("cors");
+// const cors = require("cors");
 var bodyParser = require('body-parser')
 const logger = require("morgan");
 
 const PORT = 4000;
 require("dotenv").config({ path: ".env" });
 const app = express();
-var corsOptions = {
-  origin: ['https://html-to-pdf-fe-3i37.vercel.app', 'http://localhost:3000'],
-  optionsSuccessStatus: 200,
-  credentials: true,
-};
+// var corsOptions = {
+//   origin: ['https://html-to-pdf-fe-3i37.vercel.app', 'http://localhost:3000'],
+//   optionsSuccessStatus: 200,
+//   credentials: true,
+// };
 
-app.use(cors(corsOptions));
+// app.use(cors(corsOptions));
 app.use(logger("dev"));
 app.use(bodyParser.json({ type: 'application/*+json' }))
 
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: false }));
+
+// API Routes
+app.get("/", (req, res) => {
+  res.send("Server is running!");
+});
 
 // Apply middleware for versioning before handling routes
 app.use('/api/:version/pdf', require("./app/middleware/apiVersionMiddleware"));
