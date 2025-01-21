@@ -1,10 +1,16 @@
 const express = require("express");
-// const cors = require("cors");
+const cors = require("cors");
 var bodyParser = require('body-parser')
 const logger = require("morgan");
 
 const PORT = 4000;
 require("dotenv").config({ path: ".env" });
+
+const allowedOrigins = [
+  'https://html-to-pdf-fe-3i37.vercel.app',
+  'http://localhost:3000'
+];
+
 const app = express();
 // var corsOptions = {
 //   origin: ['https://html-to-pdf-fe-3i37.vercel.app', 'http://localhost:3000'],
@@ -12,7 +18,22 @@ const app = express();
 //   credentials: true,
 // };
 
-// app.use(cors(corsOptions));
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  optionsSuccessStatus: 200,
+  credentials: false, // Allow cookies/credentials
+};
+
+app.use(cors(corsOptions));
 app.use(logger("dev"));
 app.use(bodyParser.json({ type: 'application/*+json' }))
 
