@@ -40,24 +40,24 @@ app.get("/", (req, res) => {
 });
 
 // Apply middleware for versioning before handling routes
-app.use('/api/:version/pdf', require("./app/middleware/apiVersionMiddleware"));
+app.use('/api_/:version/pdf', require("./app/middleware/apiVersionMiddleware"));
 
-app.use("/api/v1/users", require("./app/routes/user.route"));
-app.use("/api/v1/profiles", require("./app/routes/profile.route"));
-app.use("/api/v1/organizations", require("./app/routes/organization.route"));
-app.use("/api/v1/addons", require("./app/routes/addonManage.route"));
-app.use("/api/v1/external-keys", require("./app/routes/externalKey.route"));
+app.use("/api_/v1/users", require("./app/routes/user.route"));
+app.use("/api_/v1/profiles", require("./app/routes/profile.route"));
+app.use("/api_/v1/organizations", require("./app/routes/organization.route"));
+app.use("/api_/v1/addons", require("./app/routes/addonManage.route"));
+app.use("/api_/v1/external-keys", require("./app/routes/externalKey.route"));
 
-app.use("/api/v1/tags", require("./app/routes/tagManage.route"));
-app.use("/api/v1/dynamic-html-table", require("./app/routes/dynamicHtmlTable.route"));
+app.use("/api_/v1/tags", require("./app/routes/tagManage.route"));
+app.use("/api_/v1/dynamic-html-table", require("./app/routes/dynamicHtmlTable.route"));
 
-app.use("/api/v1/pdf-templates", require("./app/routes/pdfManage.route"));
-app.use("/api/v2/pdf", require("./app/routes/pdfGenerate.route"));
-app.use("/api/v1/logs", require("./app/routes/requestManager.route"));
+app.use("/api_/v1/pdf-templates", require("./app/routes/pdfManage.route"));
+app.use("/api_/v2/pdf", require("./app/routes/pdfGenerate.route"));
+app.use("/api_/v1/logs", require("./app/routes/requestManager.route"));
 
-app.use('/api/v1/tokens', require("./app/routes/token.routes"));
-app.use('/api/v1/media', require("./app/routes/mediaLocale.route"));
-app.use("/api/v1/s3", require("./app/routes/s3.route"));
+app.use('/api_/v1/tokens', require("./app/routes/token.routes"));
+app.use('/api_/v1/media', require("./app/routes/mediaLocale.route"));
+app.use("/api_/v1/s3", require("./app/routes/s3.route"));
 
 
 
