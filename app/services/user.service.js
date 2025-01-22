@@ -26,7 +26,7 @@ const loginUser = async (email, password, rememberMe) => {
     if (!user || !(await bcrypt.compare(password, user.password))) {
         throw new Error('Invalid credentials');
     }
-    const token = jwt.sign({ id: user.id, name: user.name }, process.env.SECRET_KEY, { expiresIn: rememberMe & Boolean(rememberMe) ? '30d' : JWT_EXPIRATION });
+    
     try {
         const profile = await profileService.getProfile(user.id);
         user.profile = profile ? { id: profile.id, theme: profile.theme, avatar: profile.avatar }
@@ -34,6 +34,7 @@ const loginUser = async (email, password, rememberMe) => {
     } catch (error) {
         // console.log(error);
     }
+    const token = jwt.sign({ id: user.id, name: user.name, user: JSON.stringify(user) }, process.env.SECRET_KEY, { expiresIn: rememberMe & Boolean(rememberMe) ? '30d' : JWT_EXPIRATION });
     return {
         token, user: {
             id: user.id, name: user.name, email: user.email, role: user.role, profile: user.profile
