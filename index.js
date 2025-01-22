@@ -7,8 +7,8 @@ const PORT = 4000;
 require("dotenv").config({ path: ".env" });
 
 // const allowedOrigin = 'https://html-to-pdf-fe-3i37.vercel.app';//process.env.ALLOWED_ORIGIN || 'http://localhost:3000';
-const allowedOrigin = 'http://localhost:3000';//process.env.ALLOWED_ORIGIN || 'http://localhost:3000';
-const allowedOrigin = 'http://localhost:3000';//process.env.ALLOWED_ORIGIN || 'http://localhost:3000';
+// const allowedOrigin = 'http://localhost:3000';//process.env.ALLOWED_ORIGIN || 'http://localhost:3000';
+const allowedOrigin = 'http://188.166.245.108';//process.env.ALLOWED_ORIGIN || 'http://localhost:3000';
 
 const app = express();
 // var corsOptions = {
