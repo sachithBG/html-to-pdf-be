@@ -6,20 +6,15 @@ const logger = require("morgan");
 const PORT = 4000;
 require("dotenv").config({ path: ".env" });
 
-// const allowedOrigin = 'https://html-to-pdf-fe-3i37.vercel.app';//process.env.ALLOWED_ORIGIN || 'http://localhost:3000';
-// const allowedOrigin = 'http://localhost:3000';//process.env.ALLOWED_ORIGIN || 'http://localhost:3000';
-const allowedOrigin = 'http://157.230.56.160';//process.env.ALLOWED_ORIGIN || 'http://localhost:3000';
+// const allowedOrigin = 'https://html-to-pdf-fe.vercel.app';//process.env.ALLOWED_ORIGIN || 'http://localhost:3000';
+// const allowedOrigin =  'http://localhost:3000';//process.env.ALLOWED_ORIGIN || 'http://localhost:3000';
+// const allowedOrigin = 'http://34.56.187.137:3000';//process.env.ALLOWED_ORIGIN || 'http://localhost:3000';
 
 const app = express();
-// var corsOptions = {
-//   origin: ['https://html-to-pdf-fe-3i37.vercel.app', 'http://localhost:3000'],
-//   optionsSuccessStatus: 200,
-//   credentials: true,
-// };
 
 const corsOptions = {
   origin: (origin, callback) => {
-    if (origin === allowedOrigin || !origin) {
+    if (origin === process.env.ALLOWED_ORIGIN || !origin) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));

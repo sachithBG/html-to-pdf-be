@@ -13,12 +13,16 @@ class MediaService {
         return this.mediaRepository.getMediaById(id);
     }
 
+    async getMediaByUrl(url) {
+        return this.mediaRepository.getMediaByUrl(url);
+    }
+
     async getAllMediaByOrganization(organization_id, addon_ids) {
         return this.mediaRepository.getAllMediaByOrganization(organization_id, addon_ids);
     }
 
-    async getProfileImg(organization_id) {
-        return this.mediaRepository.getProfileImg(organization_id);
+    async getProfileImg(userId) {
+        return this.mediaRepository.getProfileImg(userId);
     }
 
     async updateMedia(id, updates) {
@@ -31,6 +35,10 @@ class MediaService {
 
     async deleteMediaByKey(fileKey) {
         return this.mediaRepository.deleteMediaByKey(fileKey);
+    }
+
+    async deleteMediaByUrl(url) {
+        return this.mediaRepository.deleteMediaByUrl(url);
     }
 
     async deleteMediaByOrgId(orgId) {

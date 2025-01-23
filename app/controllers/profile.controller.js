@@ -70,7 +70,7 @@ const updateProfileTheme = async (req, res) => {
     }
 };
 
-// Update profile avatar
+// Update profile avatar | Deprecated
 const updateProfileAvatar = async (req, res) => {
     const { userId } = req.params;
     const avatar = req.file; // Assuming the avatar image is uploaded as a file

@@ -28,12 +28,18 @@ const updateProfileTheme = async (userId, theme) => {
     return true;
 };
 
-// Update profile avatar
+// Update profile avatar | Deprecated
 const updateProfileAvatar = async (userId, avatar) => {
     avatar = await s3Service.uploadImage('profile', avatar);
     const result = await profileRepository.updateProfileAvatar(Number(userId), avatar?.fileUrl, avatar?.fileKey);
     if (result === 0) throw new Error('Profile not found or avatar not updated');
     return avatar?.fileUrl;
+};
+
+const updateProfileAvatarV2 = async (userId, avatar) => {
+    const result = await profileRepository.updateProfileAvatar(Number(userId), avatar);
+    if (result === 0) throw new Error('Profile not found or avatar not updated');
+    return avatar;
 };
 
 // Delete profile
@@ -43,4 +49,4 @@ const deleteProfile = async (userId) => {
     return true;
 };
 
-module.exports = { createProfile, getProfile, updateProfile, deleteProfile, updateProfileTheme, updateProfileAvatar };
+module.exports = { createProfile, getProfile, updateProfile, deleteProfile, updateProfileTheme, updateProfileAvatar, updateProfileAvatarV2 };

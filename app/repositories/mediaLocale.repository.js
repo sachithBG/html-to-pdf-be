@@ -1,12 +1,13 @@
 const db = require('../config/db'); // MySQL connection instance
 
 class MediaRepository {
-    async createMedia({ file_key, addon_ids, url, organization_id, file_type }) {
+    async createMedia({ name='image',file_key, addon_ids, url, organization_id, file_type }) {
         const query = `
-      INSERT INTO media (file_key, addon_ids, url, organization_id, file_type)
-      VALUES (?, ?, ?, ?, ?);
+      INSERT INTO media (name, file_key, addon_ids, url, organization_id, file_type)
+      VALUES (?,?, ?, ?, ?, ?);
     `;
         const [result] = await db.execute(query, [
+            name,
             file_key,
             JSON.stringify(addon_ids || []),
             url,
@@ -19,6 +20,12 @@ class MediaRepository {
     async getMediaById(id) {
         const query = `SELECT * FROM media WHERE id = ?;`;
         const [rows] = await db.execute(query, [id]);
+        return rows[0];
+    }
+
+    async getMediaByUrl(url) {
+        const query = `SELECT * FROM media WHERE url = ?;`;
+        const [rows] = await db.execute(query, [url]);
         return rows[0];
     }
 
@@ -74,6 +81,11 @@ class MediaRepository {
     async deleteMediaByKey(file_key) {
         const query = `DELETE FROM media WHERE file_key = ?;`;
         await db.execute(query, [file_key]);
+    }
+
+    async deleteMediaByUrl(url) {
+        const query = `DELETE FROM media WHERE url = ?;`;
+        await db.execute(query, [url]);
     }
 
     async deleteMediaByOrgId(orgId) {
