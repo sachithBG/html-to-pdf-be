@@ -87,15 +87,18 @@ const setStyles = (content, ckeditorStyles) => {
                             font-family: Arial, sans-serif;
                             margin: 0;
                             padding: 0;
+                            color: #333;
+                            font-size: 12px; /* Default font size */
+                            line-height: 0.1;
                         },
                         .ck-content {
-                        max-width: 800px;
-                        margin: 0 auto;
-                    }
+                            max-width: 794px;
+                            margin: 0 auto;
+                        }
                     </style>
                 </head>
                 <body>
-                <div style="width: 800px;">
+                <div style="width: 794px;" className="ck ck-editor__main">
                     <div class="ck ck-content">
                         ${content} 
                     </div>

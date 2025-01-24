@@ -136,7 +136,8 @@ const generatePdfWithData = async (req, res) => {
 // Test PDF generation with predefined content
 const testPdf = async (req, res) => {
     try {
-        const data = await pdfGenerateService.testPdf();
+        const { headerContent, bodyContent, footerContent, margin } = req.body;
+        const data = await pdfGenerateService.testPdf(headerContent, bodyContent, footerContent, margin);
         res.json({ pdf: data });
     } catch (error) {
         console.error("Error generating test PDF:", error);

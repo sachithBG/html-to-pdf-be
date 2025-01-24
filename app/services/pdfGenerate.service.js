@@ -28,7 +28,7 @@ const generatePdf = async (headerContent, bodyContent, footerContent) => {
         // bodyContent = await replaceImagesWithBase64(bodyContent);
         footerContent = await replaceImagesWithBase64(footerContent);
 
-        bodyContent = `<html><body><div>${bodyContent}</div></body></html>`;
+        // bodyContent = `<html><body><div>${bodyContent}</div></body></html>`;
         const pdfBuffer = await convertHtmlToPdf(headerContent, bodyContent, footerContent, margin, true);
 
         return Buffer.from(pdfBuffer).toString("base64");
@@ -80,18 +80,18 @@ const generatePdfWithData = async (headerContent, bodyContent, footerContent, op
         bodyContent = replacePlaceholders(bodyContent, json, defVal);
         footerContent = replacePlaceholders(footerContent, json, defVal);
 
-                bodyContent = setStyles(bodyContent, ckeditorStyles);
+        // bodyContent = setStyles(bodyContent, ckeditorStyles);
         // headerContent = setStyles(headerContent, ckeditorStyles);
         // headerContent = `<div class="ck ck-content">
         //                 ${headerContent} 
         //             </div>`;
-        
 
-        headerContent = await replaceImagesWithBase64(decodeHTMLEntities(headerContent));
-        bodyContent = await replaceImagesWithBase64(decodeHTMLEntities(bodyContent));
-        footerContent = await replaceImagesWithBase64(decodeHTMLEntities(footerContent));
 
-        bodyContent = `<html><body><div>${bodyContent}</div></body></html>`;
+        // headerContent = await replaceImagesWithBase64(decodeHTMLEntities(headerContent));
+        // bodyContent = await replaceImagesWithBase64(decodeHTMLEntities(bodyContent));
+        // footerContent = await replaceImagesWithBase64(decodeHTMLEntities(footerContent));
+
+        // bodyContent = `<html><body><div>${bodyContent}</div></body></html>`;
         const pdfBuffer = await convertHtmlToPdf(headerContent, bodyContent, footerContent, defaultMargin, displayHeaderFooter);
 
         await reqManagerService.logRequest(organization_id, { name, userId });
@@ -102,78 +102,16 @@ const generatePdfWithData = async (headerContent, bodyContent, footerContent, op
     }
 };
 
-const testPdf = async () => {
-    const htmlContent = `
-        <html>
-            <body>
-                <h1 style="font-family: Arial, sans-serif; color: #333;">HTML to PDF Conversion</h1>
-                <p style="font-family: Arial, sans-serif; color: #555;">
-                    This is the main content of the PDF.
-                </p>
-                <p style="font-family: Arial, sans-serif; color: #555;">
-                    The header and footer are consistent on every page, including images.
-                </p>
-                <img src="${imageUrl}" style="height: 300px; margin-bottom: 20px;" />
-
-                <!-- First Table Title -->
-                <h2 style="font-family: 'Georgia', serif; font-weight: bold; font-size: 18px; margin-bottom: 10px;">
-                    First Table: Sample Data
-                </h2>
-
-                <!-- First Table -->
-                <table style="width: 100%; border-collapse: collapse; font-family: Arial, sans-serif; margin-bottom: 20px;">
-                    <thead>
-                        <tr style="background-color: #4CAF50; color: white; padding: 10px;">
-                            <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Header 1</th>
-                            <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Header 2</th>
-                            <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Header 3</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr style="background-color: #f2f2f2;">
-                            <td style="padding: 8px; border: 1px solid #ddd;">Row 1, Column 1</td>
-                            <td style="padding: 8px; border: 1px solid #ddd;">Row 1, Column 2</td>
-                            <td style="padding: 8px; border: 1px solid #ddd;">Row 1, Column 3</td>
-                        </tr>
-                        <tr>
-                            <td style="padding: 8px; border: 1px solid #ddd;">Row 2, Column 1</td>
-                            <td style="padding: 8px; border: 1px solid #ddd;">Row 2, Column 2</td>
-                            <td style="padding: 8px; border: 1px solid #ddd;">Row 2, Column 3</td>
-                        </tr>
-                    </tbody>
-                </table>
-
-                <!-- Second Table Title -->
-                <h2 style="font-family: 'Georgia', serif; font-weight: bold; font-size: 18px; margin-bottom: 10px;">
-                    Second Table: 50 Rows of Data
-                </h2>
-
-                <!-- Second Table with 50 Rows -->
-                <table style="width: 100%; border-collapse: collapse; font-family: Arial, sans-serif; page-break-before: always;">
-                    <thead>
-                        <tr style="background-color: #4CAF50; color: white; padding: 10px;">
-                            <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Row Number</th>
-                            <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Description</th>
-                            <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Details</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${Array.from({ length: 50 })
-            .map((_, i) => `
-                                <tr style="${i % 2 === 0 ? 'background-color: #f2f2f2;' : ''}">
-                                    <td style="padding: 8px; border: 1px solid #ddd;">Row ${i + 1}</td>
-                                    <td style="padding: 8px; border: 1px solid #ddd;">Description for Row ${i + 1}</td>
-                                    <td style="padding: 8px; border: 1px solid #ddd;">Details for Row ${i + 1}</td>
-                                </tr>
-                            `)
-            .join('')}
-                    </tbody>
-                </table>
-            </body>
-        </html>`;
+const testPdf = async (headerContent, bodyContent, footerContent, margin) => {
 
     try {
-        const pdfBuffer = await convertHtmlToPdf(htmlContent, null, null, {}, false);
+
+        // headerContent = await replaceImagesWithBase64(decodeHTMLEntities(headerContent));
+        // bodyContent = await replaceImagesWithBase64(decodeHTMLEntities(bodyContent));
+        // footerContent = await replaceImagesWithBase64(decodeHTMLEntities(footerContent));
+        // bodyContent = setStyles(bodyContent, ckeditorStyles);
+        // bodyContent = `<html><body><div>${bodyContent}</div></body></html>`;
+        const pdfBuffer = await convertHtmlToPdf(headerContent, bodyContent, footerContent, margin, true);
         return Buffer.from(pdfBuffer).toString("base64");
     } catch (error) {
         throw new Error("Error in testPdfService: " + error.message);
@@ -185,6 +123,20 @@ const convertHtmlToPdf = async (headerWithBase64, bodyContent, footerWithBase64,
     displayHeaderFooter
 ) => {
     try {
+        margin = {
+            top: margin.top || "200px",
+            bottom: margin.bottom || "150px",
+            left: margin.left || "20px",
+            right: margin.right || "20px",
+        };
+        // headerWithBase64 = setStyles(headerWithBase64, ckeditorStyles);
+        bodyContent = setStyles(bodyContent, ckeditorStyles);
+        // footerWithBase64 = setStyles(footerWithBase64, ckeditorStyles);
+
+        headerWithBase64 = await replaceImagesWithBase64(decodeHTMLEntities(wrapContent(headerWithBase64, margin)));
+        bodyContent = await replaceImagesWithBase64(decodeHTMLEntities(bodyContent));
+        footerWithBase64 = await replaceImagesWithBase64(decodeHTMLEntities(wrapContent(footerWithBase64, margin)));
+        
         const tempDir = path.resolve('./temp');
         if (!fs.existsSync(tempDir)) {
             fs.mkdirSync(tempDir);
@@ -201,10 +153,13 @@ const convertHtmlToPdf = async (headerWithBase64, bodyContent, footerWithBase64,
 
         // Set the HTML content provided in the request
         await page.setContent(bodyContent, { waitUntil: 'domcontentloaded' });
-        if (bodyContent.includes('<table'))await page.waitForSelector('table'); // Ensure the table is loaded
-        await page.waitForSelector('img'); // Ensure the table is loaded
+        if (bodyContent?.includes('<table')) await page.waitForSelector('table'); // Ensure the table is loaded
+        if (bodyContent?.includes('<img')) await page.waitForSelector('img'); // Ensure the table is loaded
+        if (bodyContent?.includes('<p')) await page.waitForSelector('p'); // Ensure the table is loaded
 
         await page.addStyleTag({ path: './app/css/ckeditor5.css' });
+        // await page.isJavaScriptEnabled(true);
+        // await delay(2000);
         // await page.addStyleTag({ url: 'https://cdn.ckeditor.com/ckeditor5/44.1.0/ckeditor5.css' });
         // await page.emulateMediaType('screen');
         // console.log(process.env.PDF_PATH)
@@ -215,13 +170,9 @@ const convertHtmlToPdf = async (headerWithBase64, bodyContent, footerWithBase64,
             displayHeaderFooter: Boolean(displayHeaderFooter),
             headerTemplate: headerWithBase64,
             footerTemplate: footerWithBase64,
-            margin: {
-                top: margin.top || "200px",
-                bottom: margin.bottom || "150px",
-                left: margin.left || "20px",
-                right: margin.right || "20px",
-            },
+            margin: margin,
             printBackground: true,
+            waitForFonts: true,
         });
 
         await browser.close();
@@ -233,37 +184,15 @@ const convertHtmlToPdf = async (headerWithBase64, bodyContent, footerWithBase64,
         throw new Error("Failed to convert HTML to PDF: " + error.message);
     } finally {
         // Remove the temporary PDF file after reading it
-        
+
     }
 };
 
 const replaceImagesWithBase64 = async (htmlContent) => {
+    if (!htmlContent) return htmlContent;
     // Regular expression to find img tags and their src attributes
     const imgRegex = /<img\s+[^>]*src=["']([^"']+)["'][^>]*>/g;
     // const imageRegex = /<figure class="image[^>]*>.*?<img[^>]*src="([^">]+)"[^>]*>.*?<\/figure>/g;
-
-    // htmlContent = decodeHTMLEntities(htmlContent)
-    // htmlContent = htmlContent.replace(/&amp;/g, '&');
-    // while ((match = imageRegex.exec(htmlContent)) !== null) {
-    //     const imageUrl = match[1];
-    //     try {
-    //         const response = await fetch(imageUrl);
-    //         const buffer = await response.buffer();
-    //         const mimeType = response.headers.get('content-type');
-    //         const base64Image = `data:${mimeType};base64,${buffer.toString('base64')}`;
-
-    //         // Convert <figure> to <div> and replace <img> source with base64
-    //         htmlContent = htmlContent.replace(
-    //             match[0],
-    //             `<div class="image-container" style="text-align: center;">
-    //                 <img src="${base64Image}" style="max-width: 100%; height: auto; display: block; margin: 0 auto;">
-    //             </div>`
-    //         );
-    //     } catch (error) {
-    //         console.error(`Failed to fetch image: ${imageUrl}`, error);
-    //     }
-    // }
-
 
     // Find all the image URLs
     const imageUrls = [...htmlContent.matchAll(imgRegex)];
@@ -300,54 +229,6 @@ const convertToBase64 = (url) => {
             });
         });
     });
-};
-
-const convertTestPdf = async (htmlContent) => {
-    const browser = await puppeteer.launch({
-        args: ["--no-sandbox", "--disable-gpu"],
-    });
-    const page = await browser.newPage();
-    await page.setRequestInterception(true);
-    page.on("request", (request) => {
-        if (["image", "stylesheet", "font"].includes(request.resourceType())) {
-            request.abort();
-        } else {
-            request.continue();
-        }
-    });
-
-    await page.setContent(htmlContent);
-    const pdfBuffer = await page.pdf({
-        path: "output.pdf",
-        format: "A4",
-        displayHeaderFooter: true, // Enable header and footer
-        headerTemplate: `
-            <div style="font-size: 10px; text-align: center; width: 100%;">
-                <img src="${await convertToBase64(
-            imageUrl
-        )}" style="height: 30px;" />
-                <span>Custom Header - Page <span class="pageNumber"></span> of <span class="totalPages"></span></span>
-            </div>
-        `,
-        footerTemplate: `
-            <div style="font-size: 10px; text-align: center; width: 100%; border-top: 1px solid #ccc; padding-top: 5px;">
-            <img src="${await convertToBase64(
-            imageUrl
-        )}" style="height: 30px;" />
-                <span>Custom Footer - Page <span class="pageNumber"></span> of <span class="totalPages">
-                </span></span>
-            </div>
-        `,
-        margin: {
-            top: "80px", // Adjust to fit the header
-            bottom: "80px", // Adjust to fit the footer
-            left: "20px",
-            right: "20px",
-        },
-    });
-
-    await browser.close();
-    return pdfBuffer;
 };
 
 const generateTableHtml = (tableData) => {
@@ -427,7 +308,17 @@ const tableTemplate = `
 
 const generatedTableBody = generateTableBody(tableData);
 const updatedTable = tableTemplate.replace('<tbody><!-- Table body will be dynamically inserted here --></tbody>', `<tbody>${generatedTableBody}</tbody>`);
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
+const wrapContent = (content, margin) => {
+    return `
+        <div style="width: 794px;margin-left: ${margin.left}; margin-right: ${margin.right};padding: 0;color: #333;font-size: 12px;line-height: 0.1;" className="ck ck-editor__main">
+            <div class="ck ck-content">
+                ${content}
+            </div>
+        </div>
+    `;
+};
 
 module.exports = {
     generatePdf,
@@ -437,6 +328,5 @@ module.exports = {
     convertHtmlToPdf,
     replaceImagesWithBase64,
     convertToBase64,
-    convertTestPdf,
     generateTableHtml
 }
