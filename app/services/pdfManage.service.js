@@ -5,18 +5,6 @@ const { PdfTemplate } = require("./vm/pdfTemplate");
 const savePdf = async (name, headerContent, bodyContent, footerContent, json, margin,
     displayHeaderFooter = true, defVal = "-", organization_id, addon_ids, external_key, sections, subcategories) => {
     try {
-        // Check if PDF with the same name already exists
-        const existingPdf = await pdfRepository.existsByName(name);
-        if (existingPdf) {
-            throw new Error('A PDF with this name already exists.');
-        }
-
-        // Check if a template with the same externalKey and addon already exists
-        const existingExternalKeyAndAddon = await pdfRepository.existsByExternalKeyAndAddon(external_key, addon_ids);
-        if (existingExternalKeyAndAddon) {
-            throw new Error('A template with the same external key and addon already exists.');
-        }
-
         // Call repository method to save PDF
         const pdfId = await pdfRepository.savePdf(name, headerContent, bodyContent, footerContent,
             json, margin, displayHeaderFooter, defVal, organization_id, addon_ids, external_key, sections, subcategories);
@@ -42,12 +30,7 @@ const savePdf = async (name, headerContent, bodyContent, footerContent, json, ma
 const updatePdf = async (id, name, headerContent, bodyContent, footerContent, json, margin,
     displayHeaderFooter = true, defVal = "-", organization_id, addon_ids, external_key, sections, subcategories) => {
     try {
-        // Check if PDF with the same name already exists, but not the current one being updated
-        const existingPdf = await pdfRepository.existsByNameIdNot(name, id);
-        if (existingPdf) {
-            throw new Error('A PDF with this name already exists.');
-        }
-
+        
         // Call repository method to update PDF
         const updated = await pdfRepository.updatePdf(id, name, headerContent, bodyContent, footerContent, json,
             margin, displayHeaderFooter, defVal, organization_id, addon_ids, external_key, sections, subcategories);
@@ -165,6 +148,18 @@ const getTemplateByAddon = async (addonId, typeStatus) => {
     }
 };
 
+const existsByName = async (name) => {
+    return await pdfRepository.existsByName(name);
+};
+
+const existsByExternalKeyAndAddon = async (externalKey, addonId) => {
+    return await pdfRepository.existsByExternalKeyAndAddon(externalKey, addonId);
+}
+
+const existsByNameIdNot = async (name, id) => {
+    return await pdfRepository.existsByNameIdNot(name, id);
+};
+
 module.exports = {
     savePdf,
     updatePdf,
@@ -176,4 +171,7 @@ module.exports = {
     updateDummyData,
     getTemplateById,
     getTemplateByAddon,
+    existsByName,
+    existsByExternalKeyAndAddon,
+    existsByNameIdNot
 }

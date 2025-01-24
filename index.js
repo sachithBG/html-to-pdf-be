@@ -8,13 +8,13 @@ require("dotenv").config({ path: ".env" });
 
 // const allowedOrigin = 'https://html-to-pdf-fe.vercel.app';//process.env.ALLOWED_ORIGIN || 'http://localhost:3000';
 // const allowedOrigin =  'http://localhost:3000';//process.env.ALLOWED_ORIGIN || 'http://localhost:3000';
-// const allowedOrigin = 'http://34.56.187.137:3000';//process.env.ALLOWED_ORIGIN || 'http://localhost:3000';
+const allowedOrigin = 'http://34.56.187.137:3000';//process.env.ALLOWED_ORIGIN || 'http://localhost:3000';
 
 const app = express();
 
 const corsOptions = {
   origin: (origin, callback) => {
-    if (origin === process.env.ALLOWED_ORIGIN || !origin) {
+    if (origin === allowedOrigin || !origin) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));

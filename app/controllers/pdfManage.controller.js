@@ -22,6 +22,18 @@ const savePdf = async (req, res) => {
         if (!external_key) {
             return res.status(400).json({ error: 'Type/Status is required.' });
         }
+        if (addon_ids && addon_ids.length === 0) {
+            return res.status(400).json({ error: 'At least one addon must be selected.' });
+        }
+        const existingPdf = await pdfService.existsByName(name);
+        if (existingPdf) {
+            return res.status(400).json({ error: 'A PDF with this name already exists.' });
+        }
+        // Check if a template with the same externalKey and addon already exists
+        const existingExternalKeyAndAddon = await pdfService.existsByExternalKeyAndAddon(external_key, addon_ids);
+        if (existingExternalKeyAndAddon) {
+            return res.status(400).json({ error: 'A template with the same external key and addon already exists.' });
+        }
         // Call service to save PDF
         const pdf = await pdfService.savePdf(name, headerContent, bodyContent, footerContent, json, margin,
             displayHeaderFooter, defVal, organization_id, addon_ids, external_key, sections, subcategories);
@@ -57,6 +69,11 @@ const updatePdf = async (req, res) => {
         }
         if (!external_key) {
             return res.status(400).json({ error: 'Type/Status is required.' });
+        }
+        // Check if PDF with the same name already exists, but not the current one being updated
+        const existingPdf = await pdfService.existsByNameIdNot(name, id);
+        if (existingPdf) {
+            return res.status(400).json({ error: 'A PDF with this name already exists.' });
         }
         // Call service to update PDF
         const updatedPdf = await pdfService.updatePdf(id, name, headerContent, bodyContent, footerContent, json,
