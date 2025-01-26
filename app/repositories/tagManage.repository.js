@@ -33,17 +33,17 @@ const findTagById = async (id) => {
     return rows[0];
 };
 
-const existByKey = async (key) => {
-    const [rows] = await db.query("SELECT COUNT(*) AS count FROM tags WHERE `field_path` = ?", [key]);
+const existByKeyAndOrg = async (key, organization_id) => {
+    const [rows] = await db.query("SELECT COUNT(*) AS count FROM tags WHERE `field_path` = ? AND organization_id = ?", [key, organization_id]);
     return rows[0].count > 0;
 };
 
-const existByKeyAndId = async (id, key) => {
-    const [rows] = await db.query("SELECT COUNT(*) AS count FROM tags WHERE id != ? AND `field_path` = ?", [id, key]);
+const existByKeyAndId = async (id, key, organization_id) => {
+    const [rows] = await db.query("SELECT COUNT(*) AS count FROM tags WHERE id != ? AND `field_path` = ? AND organization_id=?", [id, key, organization_id]);
     return rows[0].count > 0;
 };
 
-const findTags = async (addon_ids) => {
+const findTags = async (addon_ids, organization_id) => {
     if (!addon_ids || addon_ids.length === 0) {
         return []; // Return an empty array if no addon_ids are provided
     }
@@ -57,8 +57,8 @@ const findTags = async (addon_ids) => {
     const [rows] = await db.query(`
         SELECT * 
         FROM tags 
-        WHERE ${conditions}
-    `, addon_ids);
+        WHERE organization_id=? AND ${conditions}
+    `, [organization_id, ...addon_ids]);
 
     return rows
 };
@@ -81,14 +81,14 @@ const getTagsByAddonAndType = async (addonIds, tagType) => {
 
 
 const deleteTag = async (id) => {
-    await db.query("DELETE FROM tags WHERE id = ?", [id]);
+    await db.query("DELETE FROM tags WHERE id = ?", [Number(id)]);
 };
 
 module.exports = {
     saveTag,
     updateTag,
     findTagById,
-    existByKey,
+    existByKeyAndOrg,
     existByKeyAndId,
     findTags,
     deleteTag,

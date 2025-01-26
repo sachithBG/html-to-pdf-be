@@ -98,7 +98,40 @@ const setStyles = (content, ckeditorStyles) => {
                     </style>
                 </head>
                 <body>
-                <div style="width: 794px;" className="ck ck-editor__main">
+                <div style="width: 794px;" class="ck ck-editor__main">
+                    <div class="ck ck-content">
+                        ${content} 
+                    </div>
+                    </div>
+                </body>
+            </html>
+        `
+}
+
+const setStyles2 = (content, ckeditorStyles, margin) => {
+    return `
+            <!DOCTYPE html>
+            <html>
+                <head>
+                
+                    <style>
+                    ${ckeditorStyles} /* CKEditor styles */
+                        body {
+                            font-family: Arial, sans-serif;
+                            margin: 0;
+                            padding: 0;
+                            color: #333;
+                            font-size: 12px; /* Default font size */
+                            line-height: 0.1;
+                        },
+                        .ck-content {
+                            max-width: 794px;
+                            margin: 0 auto;
+                        }
+                    </style>
+                </head>
+                <body>
+                <div style="width: 794px;margin-left: ${margin.left}; margin-right: ${margin.right};" class="ck ck-editor__main">
                     <div class="ck ck-content">
                         ${content} 
                     </div>
@@ -116,5 +149,6 @@ module.exports = {
     tempData,
     tableData,
     getNestedValue,
-    setStyles
+    setStyles,
+    setStyles2
 }

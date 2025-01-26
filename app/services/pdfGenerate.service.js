@@ -5,7 +5,7 @@ const https = require('https');
 const { v4: uuidv4 } = require('uuid');
 const { decode } = require('entities');
 
-const { replacePlaceholders, tempData, tableData, getNestedValue, setStyles } = require("../utils/htmlConfig.util");
+const { replacePlaceholders, tempData, tableData, getNestedValue, setStyles, setStyles2 } = require("../utils/htmlConfig.util");
 const reqManagerService = require("../services/requestManager.service");
 
 const { imageUrl } = require("../utils/htmlConfig.util");
@@ -131,11 +131,15 @@ const convertHtmlToPdf = async (headerWithBase64, bodyContent, footerWithBase64,
         };
         // headerWithBase64 = setStyles(headerWithBase64, ckeditorStyles);
         bodyContent = setStyles(bodyContent, ckeditorStyles);
+        headerWithBase64 = setStyles2(headerWithBase64, ckeditorStyles, margin);
+        footerWithBase64 = setStyles2(footerWithBase64, ckeditorStyles, margin);
         // footerWithBase64 = setStyles(footerWithBase64, ckeditorStyles);
 
-        headerWithBase64 = await replaceImagesWithBase64(decodeHTMLEntities(wrapContent(headerWithBase64, margin)));
+        headerWithBase64 = await replaceImagesWithBase64(decodeHTMLEntities(headerWithBase64));
+        // headerWithBase64 = await replaceImagesWithBase64(decodeHTMLEntities(wrapContent(headerWithBase64, margin)));
         bodyContent = await replaceImagesWithBase64(decodeHTMLEntities(bodyContent));
-        footerWithBase64 = await replaceImagesWithBase64(decodeHTMLEntities(wrapContent(footerWithBase64, margin)));
+        footerWithBase64 = await replaceImagesWithBase64(decodeHTMLEntities(footerWithBase64));
+        // footerWithBase64 = await replaceImagesWithBase64(decodeHTMLEntities(wrapContent(footerWithBase64, margin)));
         
         const tempDir = path.resolve('./temp');
         if (!fs.existsSync(tempDir)) {
@@ -311,15 +315,31 @@ const updatedTable = tableTemplate.replace('<tbody><!-- Table body will be dynam
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const wrapContent = (content, margin) => {
-    return `
-        <div style="width: 794px;margin-left: ${margin.left}; margin-right: ${margin.right};padding: 0;color: #333;font-size: 12px;line-height: 0.1;" className="ck ck-editor__main">
-            <div class="ck ck-content">
-                ${content}
-            </div>
-        </div>
-    `;
+    // <div style="width: 794px;margin-left: ${margin.left}; margin-right: ${margin.right};padding: 0;color: #333;font-size: 12px;line-height: 0.1;" className="ck ck-editor__main">
+    // return content;
+    // <div class="ck ck-content" style="width: '100%';">
+    // </div>
+    return `<div className="ck ck-editor__main">
+  <div class="ck ck-content" style="font-size: 12px; width: 100%;
+  margin-left: ${margin.left}; margin-right: ${margin.right};">
+    ${content}
+  </div>
+  </div>
+`;
 };
 
+const headerHTML = `
+  <div class="ck ck-content" style="font-size: 12px; width: 100%; text-align: center; padding: 10px 0; border-bottom: 1px solid #ddd;">
+    <span style="font-weight: bold;">Document Title</span>
+    <span style="float: right;">{{date}}</span>
+  </div>
+`;
+
+const footerHTML = `
+  <div class="ck ck-content" style="font-size: 12px; width: 100%; text-align: center; padding: 10px 0; border-top: 1px solid #ddd;">
+    <span>Page {{pageNumber}} of {{totalPages}}</span>
+  </div>
+`;
 module.exports = {
     generatePdf,
     generatePdfWithData,

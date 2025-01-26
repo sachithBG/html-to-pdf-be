@@ -39,6 +39,7 @@ app.get("/", (req, res) => {
 app.use('/api/:version/pdf', require("./app/middleware/apiVersionMiddleware"));
 
 app.use("/api/v1/users", require("./app/routes/user.route"));
+app.use("/api/v1/reset-password", require("./app/routes/resetPassword.route"));
 app.use("/api/v1/profiles", require("./app/routes/profile.route"));
 app.use("/api/v1/organizations", require("./app/routes/organization.route"));
 app.use("/api/v1/addons", require("./app/routes/addonManage.route"));

@@ -1,25 +1,27 @@
 const tagRepository = require("../repositories/tagManage.repository");
 
 const saveTag = async (tagData) => {
-    const { field_path, tag_type } = tagData;
+    const { field_path, tag_type, organization_id } = tagData;
 
-    if (await tagRepository.existByKey(field_path)) {
+    if (await tagRepository.existByKeyAndOrg(field_path, organization_id)) {
         throw new Error("Tag with the same key already exists.");
     }
     if (tag_type == 'TABLE') {
-        tagData.field_path = field_path + "._table_";
+        tagData.field_path = field_path.endsWith("._table_")
+            ? field_path : `${field_path.replace(/\._table_$/, "")}._table_`;
     }
     return await tagRepository.saveTag(tagData);
 };
 
 const updateTag = async (id, tagData) => {
-    const { field_path, tag_type } = tagData;
+    const { field_path, tag_type, organization_id } = tagData;
 
-    if (await tagRepository.existByKeyAndId(id, field_path)) {
+    if (await tagRepository.existByKeyAndId(id, field_path, organization_id)) {
         throw new Error("Tag with the same key already exists.");
     }
     if (tag_type == 'TABLE') {
-        tagData.field_path = tagData.field_path.replaceAll("._table_", '') + '._table_';
+        tagData.field_path = field_path.endsWith("._table_")
+            ? field_path : `${field_path.replace(/\._table_$/, "")}._table_`;
     }
     return await tagRepository.updateTag(id, tagData);
 };
@@ -34,8 +36,8 @@ const findTagById = async (id) => {
     return tag;
 };
 
-const findTags = async (addon_ids) => {
-    return await tagRepository.findTags(addon_ids);
+const findTags = async (addon_ids, organization_id) => {
+    return await tagRepository.findTags(addon_ids, organization_id);
 };
 
 const deleteTag = async (id) => {

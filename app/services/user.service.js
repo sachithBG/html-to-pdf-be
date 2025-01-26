@@ -3,12 +3,13 @@ const jwt = require('jsonwebtoken');
 const userRepository = require('../repositories/user.repository');
 const profileService = require('./profile.service');
 const { JWT_EXPIRATION } = require('../utils/jwt');
+const { hashPassword } = require('./resetPassword.service');
 
 
 
 // Register user
 const registerUser = async (name, email, password, role = 'USER') => {
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await hashPassword(password);
     const userId = await userRepository.createUser(name, email, hashedPassword, role);
     if (userId) {
         try {
@@ -51,7 +52,7 @@ const getUserById = async (id) => {
 
 // Update user
 const updateUser = async (id, name, email, password) => {
-    const hashedPassword = password ? await bcrypt.hash(password, 10) : undefined;
+    const hashedPassword = password ? await hashPassword(password) : undefined;
     const result = await userRepository.updateUser(id, name, email, hashedPassword);
     if (result === 0) throw new Error('User not found or not updated');
     return true;
