@@ -46,7 +46,7 @@ const uploadOrgLogo = async (req, res) => {
             return res.status(404).json({ message: "Image not found." });
         }
         // organizationService.updateOrganizationV2(organizationId, name, file?.location); 
-        currentImg = await mediaService.getProfileImg(organizationId);
+        currentImg = await mediaService.getOrgLogo(organizationId);
         mediaService.createMedia({ name, file_key: file.key, addon_ids: [], url: file.location, organization_id: organizationId, file_type: 'LOGO' });
         res.status(201).json({ message: "File uploaded successfully.", url: file?.location });
     } catch (error) {

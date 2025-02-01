@@ -25,6 +25,10 @@ class MediaService {
         return this.mediaRepository.getProfileImg(userId);
     }
 
+    async getOrgLogo(userId) {
+        return this.mediaRepository.getOrgLogo(userId);
+    }
+
     async updateMedia(id, updates) {
         return this.mediaRepository.updateMedia(id, updates);
     }

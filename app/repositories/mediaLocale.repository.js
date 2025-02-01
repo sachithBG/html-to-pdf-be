@@ -57,6 +57,12 @@ class MediaRepository {
         const [rows] = await db.execute(query, [organization_id]);
         return rows;
     }
+    
+    async getOrgLogo(organization_id) {
+        const query = `SELECT * FROM media WHERE organization_id = ? AND file_type = 'LOGO' LIMIT 1;`;
+        const [rows] = await db.execute(query, [organization_id]);
+        return rows;
+    }
 
     async updateMedia(id, updates) {
         const fields = Object.keys(updates)
