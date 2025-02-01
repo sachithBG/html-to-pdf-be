@@ -17,8 +17,8 @@ const getExternalKeyById = async (id) => {
     return await externalKeyRepository.getById(id);
 };
 
-const getExternalKeyByKeyValue = async (key_value) => {
-    return await externalKeyRepository.getByKeyValue(key_value);
+const getExternalKeyByKeyValue = async (key_value, addonId) => {
+    return await externalKeyRepository.getByKeyValue(key_value, addonId);
 };
 
 const getExternalKeyByAddonId = async (id) => {

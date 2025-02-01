@@ -67,7 +67,7 @@ const deleteOrganization = async (req, res) => {
 
     try {
         await organizationService.deleteOrganization(id);
-        res.status(200).json({ message: 'Organization deleted successfully' });
+        res.status(204).json({ message: 'Organization deleted successfully' });
     } catch (error) {
         res.status(400).json({ error: error.message });
     }

@@ -138,13 +138,13 @@ const getTemplateById = async (id) => {
     }
 };
 
-// Fetch template by Addon ID and type/status
-const getTemplateByAddon = async (addonId, typeStatus) => {
+// Fetch template by Addon ID and external key
+const getTemplateByAddon = async (addonId, keyId) => {
     try {
-        return await pdfRepository.fetchTemplateByAddon(addonId, typeStatus);
+        return await pdfRepository.fetchTemplateByAddon(addonId, keyId);
     } catch (error) {
         console.error("Error in getTemplateByAddon:", error);
-        throw new Error("Failed to fetch template by addon ID and type/status.");
+        throw new Error("Failed to fetch template by addon ID and external key.");
     }
 };
 

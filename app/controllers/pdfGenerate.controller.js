@@ -30,7 +30,7 @@ const convertById = async (req, res) => {
         };
         // Generate PDF
         const pdfBuffer = await pdfGenerateService.generatePdfWithDataV1(template.header_content,
-            template.body_content, template.footer_content, options, req.user.userId, subcategoriesFilter, allowAllSections);
+            template.body_content, template.sections, template.footer_content, options, req.user.userId, subcategoriesFilter, allowAllSections);
 
         // res.setHeader("Content-Type", "application/pdf");
         // res.setHeader("Content-Disposition", `attachment; filename=${template.name}.pdf`);
@@ -41,9 +41,9 @@ const convertById = async (req, res) => {
     }
 };
 
-// Generate PDF by Addon ID and type/status
+// Generate PDF by Addon ID and external key
 const convertByAddon = async (req, res) => {
-    const { addonName, typeStatus, subcategoriesFilter, jsonData, allowAllSections } = req.body;
+    const { addonName, externalKey, subcategoriesFilter, jsonData, allowAllSections } = req.body;
 
     try {
         // Find addon by name
@@ -53,15 +53,15 @@ const convertByAddon = async (req, res) => {
         }
 
         // Find addon by name
-        const KeyValue = await getExternalKeyByKeyValue(typeStatus);
+        const KeyValue = await getExternalKeyByKeyValue(externalKey, addon.id);
         if (!KeyValue) {
-            return res.status(404).json({ message: "Type/Status not found." });
+            return res.status(404).json({ message: "External Key not found." });
         }
 
-        // Fetch template by addon ID and type/status
+        // Fetch template by addon ID and external key
         const template = await getTemplateByAddon(addon.id, KeyValue.id);
         if (!template) {
-            return res.status(404).json({ message: "Template not found for the specified addon and type/status." });
+            return res.status(404).json({ message: "Template not found for the specified addon and key." });
         }
         const options = {
             json: jsonData,
@@ -78,7 +78,7 @@ const convertByAddon = async (req, res) => {
         };
         // Generate PDF
         const pdfBuffer = await pdfGenerateService.generatePdfWithDataV1(template.header_content,
-            template.body_content, template.footer_content, options, req.user.userId, subcategoriesFilter, allowAllSections);
+            template.body_content, template.sections, template.footer_content, options, req.user.userId, subcategoriesFilter, allowAllSections);
 
         // res.setHeader("Content-Type", "application/pdf");
         // res.setHeader("Content-Disposition", `attachment; filename=${template.name}.pdf`);

@@ -389,23 +389,18 @@ const fetchTemplateById = async (id) => {
     }
 };
 
-// Fetch template by Addon ID and type/status
+// Fetch template by Addon ID and external key
 //todo ---------------------------------
-const fetchTemplateByAddon = async (addonId, typeStatus) => {
+const fetchTemplateByAddon = async (addonId, keyId) => {
     try {
         const [rows] = await db.query(
-            `
-            SELECT pt.* 
-            FROM pdf_templates AS pt
-            INNER JOIN pdf_template_addons AS pta ON pt.id = pta.pdf_template_id
-            WHERE pta.addon_id = ? AND pt.external_key_id = ?
-            `,
-            [addonId, typeStatus]
+            `SELECT pt.* FROM pdf_templates AS pt WHERE pt.external_key_id = ?`,
+            [addonId, keyId]
         );
         return rows[0] || null;
     } catch (error) {
         console.error("Error in fetchTemplateByAddon:", error);
-        throw new Error("Failed to fetch template by addon ID and type/status.");
+        throw new Error("Failed to fetch template by addon ID and external key.");
     }
 };
 

@@ -19,9 +19,9 @@ const getById = async (id) => {
     return rows[0];  // Return the first result (or undefined if not found)
 };
 
-const getByKeyValue = async (key_value) => {
-    const query = `SELECT * FROM external_keys WHERE key_value = ?`;
-    const [rows] = await db.query(query, [key_value]);
+const getByKeyValue = async (key_value, addonId) => {
+    const query = `SELECT * FROM external_keys WHERE key_value = ? AND addon_id=?`;
+    const [rows] = await db.query(query, [key_value, addonId]);
     return rows[0];  // Return the first result (or undefined if not found)
 };
 

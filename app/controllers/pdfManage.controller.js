@@ -20,7 +20,7 @@ const savePdf = async (req, res) => {
             return res.status(400).json({ error: 'Header and footer content are required.' });
         }
         if (!external_key_id) {
-            return res.status(400).json({ error: 'Type/Status is required.' });
+            return res.status(400).json({ error: 'External Key is required.' });
         }
         if (addon_ids && addon_ids.length === 0) {
             return res.status(400).json({ error: 'At least one addon must be selected.' });
