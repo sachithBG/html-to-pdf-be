@@ -83,6 +83,14 @@ CREATE TABLE `html_tables_addons` (
     FOREIGN KEY (`addon_id`) REFERENCES `addons`(`id`)                 -- Ensure addon_id exists in the addons table
 ) CHARSET=utf8mb4;
 
+CREATE TABLE `external_keys` (
+    id INT AUTO_INCREMENT PRIMARY KEY,  -- Unique identifier for each external key
+    addon_id INT NOT NULL,              -- Foreign key referencing the addon table
+    key_value VARCHAR(255) NOT NULL,     -- Unique key identifier for the external system
+    UNIQUE KEY `unique_addon_key` (`addon_id`, `key_value`), -- Enforces uniqueness for addon_id and keyValue
+    FOREIGN KEY (`addon_id`) REFERENCES `addons`(`id`) ON DELETE CASCADE ON UPDATE CASCADE  -- Ensures addon_id exists in the addons table
+) CHARSET=utf8mb4;
+
 
 CREATE TABLE pdf_templates (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -95,20 +103,13 @@ CREATE TABLE pdf_templates (
     margin JSON,
     displayHeaderFooter BOOLEAN DEFAULT true,
     defVal VARCHAR(255) DEFAULT '-',
-    external_key VARCHAR(255) NOT NULL,
+    external_key_id INT NOT NULL UNIQUE, -- Ensure one-to-one with external_keys
     sections JSON DEFAULT NULL, 
     subcategories JSON DEFAULT NULL, 
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     modified_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (organization_id) REFERENCES organizations(id)
-) CHARSET=utf8mb4;
-
-CREATE TABLE `pdf_template_addons` (
-    `id` INT AUTO_INCREMENT PRIMARY KEY,      -- Unique identifier for each record
-    `pdf_template_id` INT NOT NULL,           -- Foreign key referencing the pdf_templates table
-    `addon_id` INT NOT NULL,                  -- Foreign key referencing the addons table
-    FOREIGN KEY (`pdf_template_id`) REFERENCES `pdf_templates`(`id`),  -- Ensure pdf_template_id exists in the pdf_templates table
-    FOREIGN KEY (`addon_id`) REFERENCES `addons`(`id`)                 -- Ensure addon_id exists in the addons table
+    FOREIGN KEY (organization_id) REFERENCES organizations(id),
+    FOREIGN KEY (external_key_id) REFERENCES external_keys(id) ON DELETE CASCADE ON UPDATE CASCADE
 ) CHARSET=utf8mb4;
 
 CREATE TABLE pdf_request_logs (
@@ -117,14 +118,6 @@ CREATE TABLE pdf_request_logs (
     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
     metadata JSON DEFAULT NULL     -- Store additional info as JSON (e.g., template name, parameters)
 );
-
-CREATE TABLE `external_keys` (
-    id INT AUTO_INCREMENT PRIMARY KEY,  -- Unique identifier for each external key
-    addon_id INT NOT NULL,              -- Foreign key referencing the addon table
-    key_value VARCHAR(255) NOT NULL,     -- Unique key identifier for the external system
-    UNIQUE KEY `unique_addon_key` (`addon_id`, `key_value`), -- Enforces uniqueness for addon_id and keyValue
-    FOREIGN KEY (`addon_id`) REFERENCES `addons`(`id`)  -- Ensures addon_id exists in the addons table
-) CHARSET=utf8mb4;
 
 CREATE TABLE media (
     id INT AUTO_INCREMENT PRIMARY KEY,

@@ -5,7 +5,7 @@ const savePdf = async (name, headerContent, bodyContent, footerContent, json={},
     defVal = "-", organization_id, addon_ids, external_key, sections, subcategories) => {
     // Insert PDF data into pdf_templates table
     const sql = 'INSERT INTO pdf_templates (name, organization_id, header_content, body_content, footer_content, json, ' +
-        'margin, displayHeaderFooter, defVal, external_key, sections, subcategories) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
+        'margin, displayHeaderFooter, defVal, external_key_id, sections, subcategories) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
     const params = [name, organization_id, headerContent, bodyContent, footerContent, JSON.stringify(json, null, 2),
         JSON.stringify(margin), displayHeaderFooter, defVal, external_key, JSON.stringify(sections), JSON.stringify(subcategories)];
     //JSON.stringify(json, null, 2)
@@ -13,11 +13,11 @@ const savePdf = async (name, headerContent, bodyContent, footerContent, json={},
     const pdfTemplateId = result.insertId;
 
     // Insert associated addon IDs into pdf_template_addons
-    if (addon_ids && addon_ids.length > 0) {
-        const addonInsertSql = 'INSERT INTO pdf_template_addons (pdf_template_id, addon_id) VALUES ?';
-        const addonParams = addon_ids.map(addon_id => [pdfTemplateId, addon_id]);
-        await db.query(addonInsertSql, [addonParams]);
-    }
+    // if (addon_ids && addon_ids.length > 0) {
+    //     const addonInsertSql = 'INSERT INTO pdf_template_addons (pdf_template_id, addon_id) VALUES ?';
+    //     const addonParams = addon_ids.map(addon_id => [pdfTemplateId, addon_id]);
+    //     await db.query(addonInsertSql, [addonParams]);
+    // }
 
     return pdfTemplateId;
 };
@@ -27,26 +27,26 @@ const updatePdf = async (id, name, headerContent, bodyContent, footerContent, js
     defVal = "-", organization_id, addon_ids, external_key, sections, subcategories) => {
     // Update PDF template data in pdf_templates table
     const sql = 'UPDATE pdf_templates SET name = ?, organization_id = ?, header_content = ?, body_content = ?, ' +
-        'footer_content = ?, margin = ?, displayHeaderFooter = ?, defVal = ?, external_key = ? , sections = ?, subcategories = ? WHERE id = ?';
+        'footer_content = ?, margin = ?, displayHeaderFooter = ?, defVal = ?, external_key_id = ? , sections = ?, subcategories = ? WHERE id = ?';
     const params = [name, organization_id, headerContent, bodyContent, footerContent,
         JSON.stringify(margin), displayHeaderFooter, defVal, external_key,
         JSON.stringify(sections), JSON.stringify(subcategories), id];
 
     const [result] = await db.query(sql, params);
 
-    if (result.affectedRows > 0) {
-        // Update addon associations in pdf_template_addons
-        // First, delete previous addon associations
-        const deleteAddonsSql = 'DELETE FROM pdf_template_addons WHERE pdf_template_id = ?';
-        await db.query(deleteAddonsSql, [id]);
+    // if (result.affectedRows > 0) {
+    //     // Update addon associations in pdf_template_addons
+    //     // First, delete previous addon associations
+    //     const deleteAddonsSql = 'DELETE FROM pdf_template_addons WHERE pdf_template_id = ?';
+    //     await db.query(deleteAddonsSql, [id]);
 
-        // Insert new addon associations if provided
-        if (addon_ids && addon_ids.length > 0) {
-            const addonInsertSql = 'INSERT INTO pdf_template_addons (pdf_template_id, addon_id) VALUES ?';
-            const addonParams = addon_ids.map(addon_id => [id, addon_id]);
-            await db.query(addonInsertSql, [addonParams]);
-        }
-    }
+    //     // Insert new addon associations if provided
+    //     if (addon_ids && addon_ids.length > 0) {
+    //         const addonInsertSql = 'INSERT INTO pdf_template_addons (pdf_template_id, addon_id) VALUES ?';
+    //         const addonParams = addon_ids.map(addon_id => [id, addon_id]);
+    //         await db.query(addonInsertSql, [addonParams]);
+    //     }
+    // }
 
     return result.affectedRows > 0;
 };
@@ -64,13 +64,13 @@ const getPdfById = async (id) => {
     // SQL to fetch PDF details and associated addon details
     const sql = `
         SELECT 
-            pdf_templates.*, 
-            addons.id AS addon_id, 
-            addons.name AS addon_name
-        FROM pdf_templates
-        LEFT JOIN pdf_template_addons ON pdf_templates.id = pdf_template_addons.pdf_template_id
-        LEFT JOIN addons ON pdf_template_addons.addon_id = addons.id
-        WHERE pdf_templates.id = ?;
+            pt.*, 
+            a.id AS addon_id,
+            a.name AS addon_name
+        FROM pdf_templates pt
+        LEFT JOIN external_keys ext ON ext.id = pt.external_key_id
+        LEFT JOIN addons a ON ext.addon_id = a.id
+        WHERE pt.id = ?;
     `;
     const params = [id];
     const [results] = await db.query(sql, params);
@@ -83,27 +83,35 @@ const getPdfById = async (id) => {
     // pdf.margin = JSON.parse(pdf.margin);
 
     // Create the addon array with objects { id, name }
-    pdf.addons = results
-        .map(row => ({
-            id: row.addon_id,
-            name: row.addon_name
-        }))
-        .filter(addon => addon.id !== null); // Filter out any rows with no addon
+    // pdf.addons = results
+    //     .map(row => ({
+    //         id: row.addon_id,
+    //         name: row.addon_name
+    //     }))
+    //     .filter(addon => addon.id !== null); // Filter out any rows with no addon
 
     return pdf;  // Return the PDF data with associated addons as objects
 };
 
 
 // Repository method to get PDF by name
-const getPdfByName = async (name) => {
-    const sql = 'SELECT * FROM pdf_templates WHERE name = ?';
-    const params = [name];
+const getPdfByKey = async (organization_id, addon, key) => {
+    const sql = `
+        SELECT t.* 
+        FROM pdf_templates t
+        JOIN external_keys k ON t.external_key_id = k.id
+        JOIN addons addn ON k.addon_id = addn.id
+        WHERE addn.organization_id = ? 
+          AND addn.name = ? 
+          AND k.key_value = ?;
+    `;
+    const params = [organization_id, addon, key];
     const [results] = await db.query(sql, params);
-    return results[0]; // Returns the first record or null if not found
+    return results?.[0] || null;
 };
 
 // Repository method to check if PDF exists by name (returns boolean)
-const existsByName = async (name) => {
+const existsByExternalKey = async (key) => {
     const sql = `
         SELECT 
             CASE 
@@ -111,9 +119,9 @@ const existsByName = async (name) => {
                 ELSE 0
             END AS res
         FROM pdf_templates 
-        WHERE name = ?;
+        WHERE external_key_id = ?;
     `;
-    const params = [name];
+    const params = [key];
 
     try {
         const [results] = await db.query(sql, params);
@@ -125,7 +133,7 @@ const existsByName = async (name) => {
 };
 
 // Repository method to check if a PDF with the same name exists, but not the one being updated
-const existsByNameIdNot = async (name, id) => {
+const existsByKeyIdNot = async (key, id) => {
     const sql = `
         SELECT 
             CASE 
@@ -133,18 +141,19 @@ const existsByNameIdNot = async (name, id) => {
                 ELSE 0
             END AS has
         FROM pdf_templates 
-        WHERE name = ? AND id != ?;
+        WHERE external_key_id = ? AND id != ?;
     `;
-    const params = [name, id];
+    const params = [key, id];
 
     const [results] = await db.query(sql, params);
     return results[0].has === 1;
 };
 
-// Repository method to get paginated data
+// Repository method to get paginated data 
+// todo ---------------------------------------------------
 const getDataAsPage = async (sortOrder, startFrom, to, sortBy, addonsFilter, search, organization_id) => {
     let sql = `
-        SELECT 
+        SELECT
             pt.id,
             pt.organization_id,
             pt.name,
@@ -153,22 +162,25 @@ const getDataAsPage = async (sortOrder, startFrom, to, sortBy, addonsFilter, sea
             pt.defVal,
             pt.created_at,
             pt.modified_at,
-            pt.external_key,
-            GROUP_CONCAT(addons.name) AS addons
-        FROM 
+            pt.external_key_id,
+            ext.key_value AS external_key,
+            GROUP_CONCAT(DISTINCT addons.name) AS addons
+        FROM
             pdf_templates pt
-        LEFT JOIN 
-            pdf_template_addons pta ON pt.id = pta.pdf_template_id
         LEFT JOIN
-            addons ON addons.id = pta.addon_id
+            external_keys ext ON pt.external_key_id = ext.id
+        LEFT JOIN
+            addons ON addons.id = ext.addon_id
     `;
     let countSql = `
-        SELECT 
+        SELECT
             COUNT(DISTINCT pt.id) AS total
-        FROM 
+        FROM
             pdf_templates pt
-        LEFT JOIN 
-            pdf_template_addons pta ON pt.id = pta.pdf_template_id
+        LEFT JOIN
+            external_keys ext ON pt.external_key_id = ext.id
+        LEFT JOIN
+            addons ON addons.id = ext.addon_id
     `;
 
     const filters = [];
@@ -186,28 +198,28 @@ const getDataAsPage = async (sortOrder, startFrom, to, sortBy, addonsFilter, sea
 
     // Search filter
     if (search && search.trim().length > 0) {
-        sql += ' AND (pt.name LIKE ?)';
-        countSql += ' AND (pt.name LIKE ?)';
+        sql += ' AND pt.name LIKE ?';
+        countSql += ' AND pt.name LIKE ?';
         filters.push(`%${search}%`);
     }
 
     // Addons filter
     if (addonsFilter && addonsFilter?.length > 0) {
-        const addonIds = addonsFilter.map(Number);
-        havingClause = ` HAVING COUNT(DISTINCT CASE WHEN pta.addon_id IN (${addonIds.map(() => '?').join(',')}) THEN pta.addon_id END) = ?`;
-        filters.push(...addonIds, addonIds.length);
+        const addonPlaceholders = addonsFilter.map(() => '?').join(',');
+        havingClause = ` HAVING COUNT(DISTINCT CASE WHEN addons.id IN (${addonPlaceholders}) THEN addons.id END) = ?`;
+        filters.push(...addonsFilter, addonsFilter.length);
     }
 
     // Add GROUP BY clause with all non-aggregated columns
     sql += `
-        GROUP BY 
-            pt.id, 
-            pt.organization_id, 
-            pt.name, 
-            pt.margin, 
-            pt.displayHeaderFooter, 
-            pt.defVal, 
-            pt.created_at, 
+        GROUP BY
+            pt.id,
+            pt.organization_id,
+            pt.name,
+            pt.margin,
+            pt.displayHeaderFooter,
+            pt.defVal,
+            pt.created_at,
             pt.modified_at
     `;
 
@@ -243,34 +255,18 @@ const getDataAsPage = async (sortOrder, startFrom, to, sortBy, addonsFilter, sea
     }
 };
 
-// Repository Method to Check Uniqueness
-const existsByExternalKeyAndAddon = async (external_key, addonIds) => {
-    const query = `
-        SELECT COUNT(*) AS count
-        FROM pdf_template_addons
-        WHERE addon_id IN (?) 
-          AND EXISTS (
-              SELECT 1 
-              FROM pdf_templates
-              WHERE id = pdf_template_addons.pdf_template_id 
-                AND external_key = ?
-          )
-    `;
-    const [rows] = await db.query(query, [addonIds, external_key]);
-    return rows[0].count > 0; // Return true if a match exists
-};
-
 // Repository Method: Get Template by externalKey and addon.name
+//todo ----------------------------------------------------
 const getTemplateByExternalKeyAndAddon = async (externalKey, addonName) => {
     const query = `
-        SELECT pt.*
+        SELECT pt.* 
         FROM pdf_templates pt
-        JOIN pdf_template_addons pta ON pt.id = pta.pdf_template_id
-        JOIN addons a ON pta.addon_id = a.id
-        WHERE pt.external_key = ? AND a.name = ?
+        JOIN external_keys ext ON pt.external_key_id = ext.id
+        JOIN addons a ON ext.addon_id = a.id
+        WHERE ext.key_value = ? AND a.name = ?;
     `;
     const [rows] = await db.query(query, [externalKey, addonName]);
-    return rows.length > 0 ? rows[0] : null; // Return the first matching template or null
+    return rows?.[0] || null; // Safely return the first matching row or null
 };
 
 
@@ -394,6 +390,7 @@ const fetchTemplateById = async (id) => {
 };
 
 // Fetch template by Addon ID and type/status
+//todo ---------------------------------
 const fetchTemplateByAddon = async (addonId, typeStatus) => {
     try {
         const [rows] = await db.query(
@@ -401,7 +398,7 @@ const fetchTemplateByAddon = async (addonId, typeStatus) => {
             SELECT pt.* 
             FROM pdf_templates AS pt
             INNER JOIN pdf_template_addons AS pta ON pt.id = pta.pdf_template_id
-            WHERE pta.addon_id = ? AND pt.external_key = ?
+            WHERE pta.addon_id = ? AND pt.external_key_id = ?
             `,
             [addonId, typeStatus]
         );
@@ -417,12 +414,11 @@ module.exports = {
     savePdf,
     updatePdf,
     getPdfById,
-    getPdfByName,
-    existsByName,
-    existsByNameIdNot,
+    getPdfByKey,
+    existsByExternalKey,
+    existsByKeyIdNot,
     getDataAsPage,
     deletePdf,
-    existsByExternalKeyAndAddon,
     getTemplateByExternalKeyAndAddon,
     updateDummyData,
     fetchTemplateById,

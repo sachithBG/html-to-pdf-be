@@ -6,8 +6,8 @@ const logger = require("morgan");
 const PORT = 4000;
 require("dotenv").config({ path: ".env" });
 
-const allowedOrigin =  'http://localhost:3000';
-// const allowedOrigin = 'http://34.56.187.137:3000';
+// const allowedOrigin =  'http://localhost:3000';
+const allowedOrigin = 'http://34.56.187.137:3000';
 
 const app = express();
 

@@ -14,7 +14,7 @@ const createOrganization = async (userId, name, is_default, logo) => {
 const getOrganizationsByUserId = async (userId) => {
     let res = await organizationRepository.getOrganizationsByUserId(userId);
     if (!res || res.length === 0) {
-        res = await createOrganization(userId, 'Default', 1);
+        res = [await createOrganization(userId, 'Default', 1)];
     }
     return res;
 };

@@ -85,9 +85,9 @@ const getPdfById = async (id) => {
 };
 
 // Service method to check for a PDF by name
-const getPdfByName = async (name) => {
+const getPdfByKey = async (organization_id, key, addon) => {
     try {
-        return await pdfRepository.getPdfByName(name);
+        return await pdfRepository.getPdfByKey(organization_id, key, addon);
     } catch (error) {
         throw new Error(error);//'An error occurred while checking the PDF name.'
     }
@@ -148,30 +148,25 @@ const getTemplateByAddon = async (addonId, typeStatus) => {
     }
 };
 
-const existsByName = async (name) => {
-    return await pdfRepository.existsByName(name);
+const existsByExternalKey = async (key) => {
+    return await pdfRepository.existsByExternalKey(key);
 };
 
-const existsByExternalKeyAndAddon = async (externalKey, addonId) => {
-    return await pdfRepository.existsByExternalKeyAndAddon(externalKey, addonId);
-}
-
-const existsByNameIdNot = async (name, id) => {
-    return await pdfRepository.existsByNameIdNot(name, id);
+const existsByKeyIdNot = async (name, id) => {
+    return await pdfRepository.existsByKeyIdNot(name, id);
 };
 
 module.exports = {
     savePdf,
     updatePdf,
     getPdfById,
-    getPdfByName,
+    getPdfByKey,
     getDataAsPage,
     deletePdf,
     getTemplateByExternalKeyAndAddon,
     updateDummyData,
     getTemplateById,
     getTemplateByAddon,
-    existsByName,
-    existsByExternalKeyAndAddon,
-    existsByNameIdNot
+    existsByExternalKey,
+    existsByKeyIdNot
 }

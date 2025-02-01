@@ -27,7 +27,7 @@ const getByKeyValue = async (key_value) => {
 
 const getByAddonId = async (addon_id) => {
     const query = `SELECT tag.*, tmpl.id as tmplId FROM external_keys as tag LEFT JOIN pdf_templates as
-     tmpl ON tmpl.external_key=tag.key_value WHERE tag.addon_id = ?`;
+     tmpl ON tmpl.external_key_id=tag.id WHERE tag.addon_id = ?`;
     const [rows] = await db.query(query, [addon_id]);
     return rows;
 };
